@@ -18,7 +18,7 @@ pip install -e symbolic_pofk
 
 ## Examples
 
-We give an example for how to use the emulators in `examples/example.py`.
+We give an example for how to use the emulators in `examples/examples.py`.
 
 ## Citation
 
