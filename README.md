@@ -1,5 +1,7 @@
 # symbolic_pofk
 
+[![arXiv](https://img.shields.io/badge/arXiv-2311.15865-b31b1b.svg)](https://arxiv.org/abs/2311.15865)
+
 A precise symbolic emulator of the linear matter power spectrum and for the conversion
 $\sigma_8 \leftrightarrow A_{\rm s}$ as a function of cosmology.
 Here we give the emulators as simple python functions, but these can be 
