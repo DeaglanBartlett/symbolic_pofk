@@ -7,6 +7,8 @@ $\sigma_8 \leftrightarrow A_{\rm s}$ as a function of cosmology.
 Here we give the emulators as simple python functions, but these can be 
 easily copied, pasted and modified to the language of your choice.
 Please see [Bartlett et al. 2023](https://arxiv.org/abs/2311.15865) for further details.
+Outside the $k$ range tested in Bartlett et al. 2023, we use the Eisenstein & Hu
+fit which includes baryons. 
 
 
 ## Installation

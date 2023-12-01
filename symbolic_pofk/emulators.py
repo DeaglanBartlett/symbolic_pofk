@@ -2,7 +2,7 @@ import numpy as np
 import warnings
 from colossus.cosmology import cosmology
 
-def pk_EisensteinHu(k, sigma8, Om, Ob, h, ns):
+def pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns):
     """
     Compute the Eisentein & Hu 1998 zero-baryon approximation to P(k)
     
@@ -29,6 +29,37 @@ def pk_EisensteinHu(k, sigma8, Om, Ob, h, ns):
     }
     cosmo = cosmology.setCosmology('myCosmo', **cosmo_params)
     pk_eh = cosmo.matterPowerSpectrum(k, z = 0.0, model='eisenstein98_zb')
+        
+    return pk_eh
+    
+    
+def pk_EisensteinHu_b(k, sigma8, Om, Ob, h, ns):
+    """
+    Compute the Eisentein & Hu 1998 baryon approximation to P(k)
+    
+    Args:
+        :k (np.ndarray): k values to evaluate P(k) at [h / Mpc]
+        :sigma8 (float): Root-mean-square density fluctuation when the linearly
+            evolved field is smoothed with a top-hat filter of radius 8 Mpc/h
+        :Om (float): The z=0 total matter density parameter, Omega_m
+        :Ob (float): The z=0 baryonic density parameter, Omega_b
+        :h (float): Hubble constant, H0, divided by 100 km/s/Mpc
+        :ns (float): Spectral tilt of primordial power spectrum
+        
+    Returns:
+        :pk_eh (np.ndarray): The Eisenstein & Hu 1998 baryon P(k) [(Mpc/h)^3]
+    """
+
+    cosmo_params = {
+        'flat':True,
+        'sigma8':sigma8,
+        'Om0':Om,
+        'Ob0':Ob,
+        'H0':h*100.,
+        'ns':ns,
+    }
+    cosmo = cosmology.setCosmology('myCosmo', **cosmo_params)
+    pk_eh = cosmo.matterPowerSpectrum(k, z = 0.0, model='eisenstein98')
         
     return pk_eh
     
@@ -86,7 +117,18 @@ def logF_fiducial(k, sigma8, Om, Ob, h, ns):
         * np.cos(Om * b[34] - (b[35] * k) / np.sqrt(Ob ** 2 + b[36]))
     )
     
-    return line1 + line2 + line3 + line4
+    logF = line1 + line2 + line3 + line4
+    
+    # Use Bartlett et al. 2023 P(k) only in tested regime
+    m = ~((k >= 9.e-3) & (k <= 9))
+    if m.sum() > 0:
+        warnings.warn("Not using Bartlett et al. formula outside tested regime")
+        logF[m] = np.log(
+            pk_EisensteinHu_b(k[m], sigma8, Om, Ob, h, ns) /
+            pk_EisensteinHu_zb(k[m], sigma8, Om, Ob, h, ns)
+        )
+    
+    return logF
     
     
 def logF_max_precision(k, sigma8, Om, Ob, h, ns):
@@ -144,6 +186,15 @@ def logF_max_precision(k, sigma8, Om, Ob, h, ns):
             /np.sqrt(k**2 + c[72]))**2/(k**2 + c[73]) + 1))
         )
     logF /= 100
+    
+    # Use Bartlett et al. 2023 P(k) only in tested regime
+    m = ~((k >= 9.e-3) & (k <= 9))
+    if m.sum() > 0:
+        warnings.warn("Not using Bartlett et al. formula outside tested regime")
+        logF[m] = np.log(
+            pk_EisensteinHu_b(k[m], sigma8, Om, Ob, h, ns) /
+            pk_EisensteinHu_zb(k[m], sigma8, Om, Ob, h, ns)
+        )
 
     return logF
     
@@ -168,8 +219,8 @@ def plin_emulated(k, sigma8, Om, Ob, h, ns, emulator='fiducial'):
     Returns:
         :pk_lin (np.ndarray): The emulated linear P(k) [(Mpc/h)^3]
     """
-
-    p_eh = pk_EisensteinHu(k, sigma8, Om, Ob, h, ns)
+    
+    p_eh = pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns)
     if emulator == 'fiducial':
         logF = logF_fiducial(k, sigma8, Om, Ob, h, ns)
     elif emulator == 'max_precision':

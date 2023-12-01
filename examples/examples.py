@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import symbolic_pofk.emulators as emulators
 
 # Define k range
-kmin = 9e-3
-kmax = 9
+kmin = 5e-4
+kmax = 20
 nk = 400
 k = np.logspace(np.log10(kmin), np.log10(kmax), nk)
 
@@ -24,7 +24,7 @@ As_new = emulators.sigma8_to_As(sigma8, Om, Ob, h, ns)
 print('As_new = ', As_new)
 
 # Emulate P(k)
-pk_eh = emulators.pk_EisensteinHu(k, sigma8, Om, Ob, h, ns)
+pk_eh = emulators.pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns)
 pk_fid = emulators.plin_emulated(k, sigma8, Om, Ob, h, ns, emulator='fiducial')
 pk_prec = emulators.plin_emulated(k, sigma8, Om, Ob, h, ns, emulator='max_precision')
 logF_fid = emulators.logF_fiducial(k, sigma8, Om, Ob, h, ns)
