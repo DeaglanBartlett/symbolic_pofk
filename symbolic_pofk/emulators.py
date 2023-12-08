@@ -64,7 +64,7 @@ def pk_EisensteinHu_b(k, sigma8, Om, Ob, h, ns):
     return pk_eh
     
 
-def logF_fiducial(k, sigma8, Om, Ob, h, ns):
+def logF_fiducial(k, sigma8, Om, Ob, h, ns, extrapolate=False):
     """
     Compute the emulated logarithm of the ratio between the true linear
     power spectrum and the Eisenstein & Hu 1998 fit. Here we use the fiducial exprssion
@@ -78,6 +78,9 @@ def logF_fiducial(k, sigma8, Om, Ob, h, ns):
         :Ob (float): The z=0 baryonic density parameter, Omega_b
         :h (float): Hubble constant, H0, divided by 100 km/s/Mpc
         :ns (float): Spectral tilt of primordial power spectrum
+        :extrapolate (bool, default=False): If True, then extrapolates the Bartlett
+            et al. 2023 fit outside range tested in paper. Otherwise, uses E&H with
+            baryons for this regime
         
     Returns:
         :logF (np.ndarray): The logarithm of the ratio between the linear P(k) and the
@@ -121,17 +124,17 @@ def logF_fiducial(k, sigma8, Om, Ob, h, ns):
     
     # Use Bartlett et al. 2023 P(k) only in tested regime
     m = ~((k >= 9.e-3) & (k <= 9))
-    if m.sum() > 0:
+    if (not extrapolate) and m.sum() > 0:
         warnings.warn("Not using Bartlett et al. formula outside tested regime")
         logF[m] = np.log(
             pk_EisensteinHu_b(k[m], sigma8, Om, Ob, h, ns) /
             pk_EisensteinHu_zb(k[m], sigma8, Om, Ob, h, ns)
         )
-    
+
     return logF
     
     
-def logF_max_precision(k, sigma8, Om, Ob, h, ns):
+def logF_max_precision(k, sigma8, Om, Ob, h, ns, extrapolate=False):
     """
     Compute the emulated logarithm of the ratio between the true linear
     power spectrum and the Eisenstein & Hu 1998 fit. Here we use the mosy precide
@@ -145,6 +148,9 @@ def logF_max_precision(k, sigma8, Om, Ob, h, ns):
         :Ob (float): The z=0 baryonic density parameter, Omega_b
         :h (float): Hubble constant, H0, divided by 100 km/s/Mpc
         :ns (float): Spectral tilt of primordial power spectrum
+        :extrapolate (bool, default=False): If True, then extrapolates the Bartlett
+            et al. 2023 fit outside range tested in paper. Otherwise, uses E&H with
+            baryons for this regime
         
     Returns:
         :logF (np.ndarray): The logarithm of the ratio between the linear P(k) and the
@@ -189,7 +195,7 @@ def logF_max_precision(k, sigma8, Om, Ob, h, ns):
     
     # Use Bartlett et al. 2023 P(k) only in tested regime
     m = ~((k >= 9.e-3) & (k <= 9))
-    if m.sum() > 0:
+    if (not extrapolate) and m.sum() > 0:
         warnings.warn("Not using Bartlett et al. formula outside tested regime")
         logF[m] = np.log(
             pk_EisensteinHu_b(k[m], sigma8, Om, Ob, h, ns) /
@@ -199,7 +205,7 @@ def logF_max_precision(k, sigma8, Om, Ob, h, ns):
     return logF
     
     
-def plin_emulated(k, sigma8, Om, Ob, h, ns, emulator='fiducial'):
+def plin_emulated(k, sigma8, Om, Ob, h, ns, emulator='fiducial', extrapolate=False):
     """
     Compute the emulated linear matter power spectrum using the fits of
     Eisenstein & Hu 1998 and Bartlett et al. 2023.
@@ -215,6 +221,9 @@ def plin_emulated(k, sigma8, Om, Ob, h, ns, emulator='fiducial'):
         :emulator (str, default='fiducial'): Which emulator to use from Bartlett et al.
             2023. 'fiducial' uses the fiducial one, and 'max_precision' uses the
             most precise one.
+        :extrapolate (bool, default=False): If using the Bartlett et al. 2023 fit, then
+            if true we extrapolate outside range tested in paper. Otherwise, we use the
+            E&H with baryons fit for this regime
         
     Returns:
         :pk_lin (np.ndarray): The emulated linear P(k) [(Mpc/h)^3]
@@ -222,9 +231,9 @@ def plin_emulated(k, sigma8, Om, Ob, h, ns, emulator='fiducial'):
     
     p_eh = pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns)
     if emulator == 'fiducial':
-        logF = logF_fiducial(k, sigma8, Om, Ob, h, ns)
+        logF = logF_fiducial(k, sigma8, Om, Ob, h, ns, extrapolate=extrapolate)
     elif emulator == 'max_precision':
-        logF = logF_max_precision(k, sigma8, Om, Ob, h, ns)
+        logF = logF_max_precision(k, sigma8, Om, Ob, h, ns, extrapolate=extrapolate)
     else:
         raise NotImplementedError
     p_lin = p_eh * np.exp(logF)
