@@ -69,7 +69,7 @@ primaryClass = {astro-ph.CO},
 
 and if you use the non-linear emulator, please also cite the following paper
 ```
-@ARTICLE{sr_halofit,
+@ARTICLE{syren_halofit,
      author = {{Bartlett}, D.~J. and {Wandelt}, B.~D. and {Zennaro}, M.
 		and {Ferreira}, P.~G. and {Desmond}, H.},  
       title = "{syren-halofit: A fast, interpretable, high-precision formula for
