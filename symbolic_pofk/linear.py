@@ -4,7 +4,7 @@ from colossus.cosmology import cosmology
 
 def pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns):
     """
-    Compute the Eisentein & Hu 1998 zero-baryon approximation to P(k)
+    Compute the Eisentein & Hu 1998 zero-baryon approximation to P(k) at z=0
     
     Args:
         :k (np.ndarray): k values to evaluate P(k) at [h / Mpc]
@@ -35,7 +35,7 @@ def pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns):
     
 def pk_EisensteinHu_b(k, sigma8, Om, Ob, h, ns):
     """
-    Compute the Eisentein & Hu 1998 baryon approximation to P(k)
+    Compute the Eisentein & Hu 1998 baryon approximation to P(k) at z=0
     
     Args:
         :k (np.ndarray): k values to evaluate P(k) at [h / Mpc]
@@ -205,7 +205,8 @@ def logF_max_precision(k, sigma8, Om, Ob, h, ns, extrapolate=False):
     return logF
     
     
-def plin_emulated(k, sigma8, Om, Ob, h, ns, emulator='fiducial', extrapolate=False):
+def plin_emulated(k, sigma8, Om, Ob, h, ns, a=1, emulator='fiducial',
+    extrapolate=False):
     """
     Compute the emulated linear matter power spectrum using the fits of
     Eisenstein & Hu 1998 and Bartlett et al. 2023.
@@ -218,6 +219,7 @@ def plin_emulated(k, sigma8, Om, Ob, h, ns, emulator='fiducial', extrapolate=Fal
         :Ob (float): The z=0 baryonic density parameter, Omega_b
         :h (float): Hubble constant, H0, divided by 100 km/s/Mpc
         :ns (float): Spectral tilt of primordial power spectrum
+        :a (float, default=1): The scale factor to evaluate P(k) at
         :emulator (str, default='fiducial'): Which emulator to use from Bartlett et al.
             2023. 'fiducial' uses the fiducial one, and 'max_precision' uses the
             most precise one.
@@ -238,6 +240,22 @@ def plin_emulated(k, sigma8, Om, Ob, h, ns, emulator='fiducial', extrapolate=Fal
         raise NotImplementedError
     p_lin = p_eh * np.exp(logF)
     
+    if a != 1:
+        # Get growth factor
+        cosmo_params = {
+            'flat':True,
+            'sigma8':sigma8,
+            'Om0':Om,
+            'Ob0':Ob,
+            'H0':h*100.,
+            'ns':ns,
+        }
+        cosmo = cosmology.setCosmology('myCosmo', **cosmo_params)
+        D = cosmo.growthFactor(1/a - 1)
+        
+        # Linear P(k) at z
+        p_lin *= D ** 2
+        
     return p_lin
 
 

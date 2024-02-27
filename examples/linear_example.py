@@ -1,11 +1,23 @@
+# Copyright 2024 Deaglan J. Bartlett
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to the following
+# conditions:
+#
+# The above copyright notice and this permission notice shall be included in all copies
+# or substantial portions of the Software.
+
 import numpy as np
 import matplotlib.pyplot as plt
-import symbolic_pofk.emulators as emulators
+import symbolic_pofk.linear as linear
 import camb
 
 # Define k range
-kmin = 5e-4
-kmax = 50
+kmin = 9e-3
+kmax = 9
 nk = 400
 k = np.logspace(np.log10(kmin), np.log10(kmax), nk)
 
@@ -18,21 +30,23 @@ ns = 0.9665
 tau = 0.0561
 
 # Get sigma8 for this As
-sigma8 = emulators.As_to_sigma8(As, Om, Ob, h, ns)
+sigma8 = linear.As_to_sigma8(As, Om, Ob, h, ns)
 print('sigma8 = ', sigma8)
 
 # See what As you get in reverse
-As_new = emulators.sigma8_to_As(sigma8, Om, Ob, h, ns)
+As_new = linear.sigma8_to_As(sigma8, Om, Ob, h, ns)
 print('As_new = ', As_new)
 
 # Emulate P(k)
-pk_eh = emulators.pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns)
-pk_eh_b = emulators.pk_EisensteinHu_b(k, sigma8, Om, Ob, h, ns)
-pk_fid = emulators.plin_emulated(k, sigma8, Om, Ob, h, ns, emulator='fiducial')
-pk_prec = emulators.plin_emulated(k, sigma8, Om, Ob, h, ns, emulator='max_precision')
+pk_eh = linear.pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns)
+pk_eh_b = linear.pk_EisensteinHu_b(k, sigma8, Om, Ob, h, ns)
+pk_fid = linear.plin_emulated(k, sigma8, Om, Ob, h, ns,
+    emulator='fiducial', extrapolate=True)
+pk_prec = linear.plin_emulated(k, sigma8, Om, Ob, h, ns,
+    emulator='max_precision', extrapolate=True)
 logF_eh_b = np.log(pk_eh_b / pk_eh)
-logF_fid = emulators.logF_fiducial(k, sigma8, Om, Ob, h, ns)
-logF_prec = emulators.logF_max_precision(k, sigma8, Om, Ob, h, ns)
+logF_fid = linear.logF_fiducial(k, sigma8, Om, Ob, h, ns, extrapolate=True)
+logF_prec = linear.logF_max_precision(k, sigma8, Om, Ob, h, ns, extrapolate=True)
 
 # Compute P(k) using camb
 pars = camb.CAMBparams()
