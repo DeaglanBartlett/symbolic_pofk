@@ -15,7 +15,7 @@ def pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns, use_colossus=False):
         :Ob (float): The z=0 baryonic density parameter, Omega_b
         :h (float): Hubble constant, H0, divided by 100 km/s/Mpc
         :ns (float): Spectral tilt of primordial power spectrum
-        :use_colossus (bool, default=True): Whether to use the external package colossus
+        :use_colossus (bool, default=False): Whether to use the external package colossus
             to compute this term
         
     Returns:
