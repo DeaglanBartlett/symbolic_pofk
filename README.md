@@ -42,7 +42,7 @@ The example `examples/fortran_example.py` shows how to run the
 fortran code with the python wrapper, and compares the difference
 between the python and fortran implementations
 (they are identical up to a fractional difference of
-O(1e-5), which is much smaller than the error on the emulation).
+O(1e-6), which is much smaller than the error on the emulation).
 
 ## Citation
 
