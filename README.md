@@ -1,14 +1,14 @@
 # symbolic_pofk
 
 [![arXiv](https://img.shields.io/badge/arXiv-2311.15865-b31b1b.svg)](https://arxiv.org/abs/2311.15865)
-[![arXiv](https://img.shields.io/badge/arXiv-XXXX.YYYYY-b31b1b.svg)](https://arxiv.org/abs/XXXX.YYYYY)
+[![arXiv](https://img.shields.io/badge/arXiv-2402.17492-b31b1b.svg)](https://arxiv.org/abs/2402.17492)
 
 Precise symbolic emulators of the linear and non-linear matter power spectra and for the conversion
 $\sigma_8 \leftrightarrow A_{\rm s}$ as a function of cosmology.
 Here we give the emulators as simple python functions and as a fortran90 routine, but these can be 
 easily copied, pasted and modified to the language of your choice.
 Please see [Bartlett et al. 2023](https://arxiv.org/abs/2311.15865) 
-and [Bartlett et al. 2024](https://arxiv.org/abs/XXXX.YYYYY) 
+and [Bartlett et al. 2024](https://arxiv.org/abs/2402.17492) 
 for further details.
 
 By default, outside the $k$ range tested in Bartlett et al. 2023, 
@@ -78,13 +78,13 @@ and if you use the non-linear emulator, please also cite the following paper
    keywords = {Astrophysics - Cosmology and Nongalactic Astrophysics},
        year = 2024,
       month = feb,
-        eid = {arXiv:XXXX.YYYYY},
-      pages = {arXiv:XXXX.YYYYY},
-        doi = {10.48550/arXiv.XXXX.YYYYY},
+        eid = {arXiv:2402.17492},
+      pages = {arXiv:2402.17492},
+        doi = {10.48550/arXiv.2402.17492},
 archivePrefix = {arXiv},
-     eprint = {XXXX.YYYYY},
+     eprint = {2402.17492},
 primaryClass = {astro-ph.CO},
-        url = {https://arxiv.org/abs/XXXX.YYYYY},
+        url = {https://arxiv.org/abs/2402.17492},
 }
 ```
 
