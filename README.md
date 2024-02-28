@@ -73,7 +73,7 @@ and if you use the non-linear emulator, please also cite the following paper
      author = {{Bartlett}, D.~J. and {Wandelt}, B.~D. and {Zennaro}, M.
 		and {Ferreira}, P.~G. and {Desmond}, H.},  
       title = "{syren-halofit: A fast, interpretable, high-precision formula for
-	the LCDM nonlinear matter power spectrum}"
+	the LCDM nonlinear matter power spectrum}",
     journal = {arXiv e-prints},
    keywords = {Astrophysics - Cosmology and Nongalactic Astrophysics},
        year = 2024,
