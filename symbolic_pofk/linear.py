@@ -1,8 +1,9 @@
 import numpy as np
 import warnings
+import scipy.integrate
 from colossus.cosmology import cosmology
 
-def pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns):
+def pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns, use_colossus=False):
     """
     Compute the Eisentein & Hu 1998 zero-baryon approximation to P(k) at z=0
     
@@ -14,21 +15,68 @@ def pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns):
         :Ob (float): The z=0 baryonic density parameter, Omega_b
         :h (float): Hubble constant, H0, divided by 100 km/s/Mpc
         :ns (float): Spectral tilt of primordial power spectrum
+        :use_colossus (bool, default=True): Whether to use the external package colossus
+            to compute this term
         
     Returns:
         :pk_eh (np.ndarray): The Eisenstein & Hu 1998 zero-baryon P(k) [(Mpc/h)^3]
     """
 
-    cosmo_params = {
-        'flat':True,
-        'sigma8':sigma8,
-        'Om0':Om,
-        'Ob0':Ob,
-        'H0':h*100.,
-        'ns':ns,
-    }
-    cosmo = cosmology.setCosmology('myCosmo', **cosmo_params)
-    pk_eh = cosmo.matterPowerSpectrum(k, z = 0.0, model='eisenstein98_zb')
+    if use_colossus:
+        cosmo_params = {
+            'flat':True,
+            'sigma8':sigma8,
+            'Om0':Om,
+            'Ob0':Ob,
+            'H0':h*100.,
+            'ns':ns,
+        }
+        cosmo = cosmology.setCosmology('myCosmo', **cosmo_params)
+        pk_eh = cosmo.matterPowerSpectrum(k, z = 0.0, model='eisenstein98_zb')
+    else:
+        ombom0 = Ob / Om
+        om0h2 = Om * h**2
+        ombh2 = Ob * h**2
+        theta2p7 = 2.7255 / 2.7 # Assuming Tcmb0 = 2.7255 Kelvin
+
+        def get_pk(kk, Anorm):
+        
+            # Compute scale factor s, alphaGamma, and effective shape Gamma
+            s = 44.5 * np.log(9.83 / om0h2) / np.sqrt(1.0 + 10.0 * ombh2**0.75)
+            alphaGamma = 1.0 - 0.328 * np.log(431.0 * om0h2) * ombom0 + \
+            0.38 * np.log(22.3 * om0h2) * ombom0**2
+            Gamma = Om * h * (alphaGamma + (1.0 - alphaGamma) / \
+                (1.0 + (0.43 * kk * h * s)**4))
+            
+            # Compute q, C0, L0, and tk_eh
+            q = kk * theta2p7**2 / Gamma
+            C0 = 14.2 + 731.0 / (1.0 + 62.5 * q)
+            L0 = np.log(2.0 * np.exp(1.0) + 1.8 * q)
+            tk_eh = L0 / (L0 + C0 * q**2)
+
+            # Calculate Pk with unit amplitude
+            return Anorm * tk_eh**2 * kk**ns
+        
+        # Define integration bounds and number of sub-intervals
+        b0 = np.log(1e-7) # ln(k_min)
+        b1 = np.log(1e5)  # ln(k_max)
+        n = 1000      # Number of sub-intervals (make sure it's even for Simpson's Rule)
+
+        # Find normalisation
+        R = 8.0
+        kk = np.exp(np.linspace(b0, b1, n))
+        x = kk * R
+        W = np.zeros(x.shape)
+        m = x < 1.e-3
+        W[m] = 1.0
+        W[~m] =3.0 / x[~m]**3 * (np.sin(x[~m]) - x[~m] * np.cos(x[~m]))
+        y = get_pk(kk, 1.0) * W**2 * kk**3
+        sigma2 = scipy.integrate.simpson(y, x=np.log(x))
+        
+        sigmaExact = np.sqrt(sigma2 / (2.0 * np.pi**2))
+        Anorm = (sigma8 / sigmaExact)**2
+        
+        pk_eh = get_pk(k, Anorm)
         
     return pk_eh
     
