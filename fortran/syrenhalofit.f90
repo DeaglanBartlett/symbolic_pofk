@@ -12,8 +12,8 @@ contains
         implicit none
         real, intent(in) :: k, Anorm, Om, Ob, h, ns
         real :: Pk, s, alphaGamma, Gamma, q, C0, L0, tk_eh, om0h2, ombh2, ombom0, theta2p7
-
-	ombom0 = Ob / Om
+        
+        ombom0 = Ob / Om
         om0h2 = Om * h**2
         ombh2 = Ob * h**2
         theta2p7 = 2.7255 / 2.7 ! Assuming Tcmb0 = 2.7255 Kelvin
@@ -237,20 +237,26 @@ contains
     end function linear_pk_emulated
 
     ! Function to approximate As given sigma8 and other cosmological parameters
-    function sigma8_to_as(sigma8, Om, Ob, h, ns) result(As)
+    ! This uses the conversion presented in v1 of Bartlett et al. which was
+    ! changed in the final version. The final version function should be used
+    ! as it is more accurate.
+    function old_sigma8_to_as(sigma8, Om, Ob, h, ns) result(As)
         implicit none
         real, intent(in) :: sigma8, Om, Ob, h, ns
         real, dimension(6) :: a = [0.161320734729, 0.343134609906, - 7.859274, &
-	    18.200232, 3.666163, 0.003359]
+                18.200232, 3.666163, 0.003359]
         real :: As
 
         As = ((sigma8 - a(6)) / (a(3) * Ob + log(a(4) * Om)) / log(a(5) * h) &
             - a(2) * ns) / a(1)
    
-    end function sigma8_to_As
+    end function old_sigma8_to_As
 
     ! Function to approximate sigma8 given As and other cosmological parameters
-    function as_to_sigma8(As, Om, Ob, h, ns) result(sigma8)
+    ! This uses the conversion presented in v1 of Bartlett et al. which was
+    ! changed in the final version. The final version function should be used
+    ! as it is more accurate.
+    function old_as_to_sigma8(As, Om, Ob, h, ns) result(sigma8)
         implicit none
         real, intent(in) :: As, Om, Ob, h, ns
         real, dimension(6) :: a = [0.161320734729, 0.343134609906, - 7.859274, &
@@ -259,6 +265,36 @@ contains
 
         sigma8 = (a(1) * As + a(2) * ns) * (a(3) * Ob + log(a(4) * Om)) &
              * log(a(5) * h) + a(6)
+
+    end function old_As_to_sigma8
+
+    ! Function to approximate As given sigma8 and other cosmological parameters
+    function sigma8_to_as(sigma8, Om, Ob, h, ns) result(As)
+        implicit none
+        real, intent(in) :: sigma8, Om, Ob, h, ns
+        real, dimension(10) :: a = [0.51172, 0.04593, 0.73983, 1.56738, 1.16846, &
+            0.59348, 0.19994, 25.09218, 9.36909, 0.00011]
+        real :: As
+
+        As = (a(1) * Om + a(2) * h + a(3) * (Om - a(4) * Ob) &
+            * (log(a(5) * Om) - a(6) * ns) &
+            * (ns + a(7) * h * (a(8) * Ob - a(9) * ns + log(a(10) * h))))
+        As = (sigma8 / As) ** 2
+
+    end function sigma8_to_As
+
+    ! Function to approximate sigma8 given As and other cosmological parameters
+    function as_to_sigma8(As, Om, Ob, h, ns) result(sigma8)
+        implicit none
+        real, intent(in) :: As, Om, Ob, h, ns
+        real, dimension(10) :: a = [0.51172, 0.04593, 0.73983, 1.56738, 1.16846, &
+            0.59348, 0.19994, 25.09218, 9.36909, 0.00011]
+        real :: sigma8
+
+        sigma8 = (a(1) * Om + a(2) * h + a(3) * (Om - a(4) * Ob) &
+            * (log(a(5) * Om) - a(6) * ns) &
+            * (ns + a(7) * h * (a(8) * Ob - a(9) * ns + log(a(10) * h))))
+        sigma8 = sigma8 * sqrt(As)
 
     end function As_to_sigma8
 
