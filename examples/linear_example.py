@@ -30,10 +30,14 @@ ns = 0.9665
 tau = 0.0561
 
 # Get sigma8 for this As
+sigma8_old = linear.As_to_sigma8(As, Om, Ob, h, ns, old_equation=True)
+print('sigma8 (old equation) = ', sigma8_old)
 sigma8 = linear.As_to_sigma8(As, Om, Ob, h, ns)
 print('sigma8 = ', sigma8)
 
 # See what As you get in reverse
+As_new = linear.sigma8_to_As(sigma8_old, Om, Ob, h, ns, old_equation=True)
+print('As_new (old equation) = ', As_new)
 As_new = linear.sigma8_to_As(sigma8, Om, Ob, h, ns)
 print('As_new = ', As_new)
 
