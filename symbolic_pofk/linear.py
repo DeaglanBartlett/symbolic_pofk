@@ -307,7 +307,7 @@ def plin_emulated(k, sigma8, Om, Ob, h, ns, a=1, emulator='fiducial',
     return p_lin
 
 
-def sigma8_to_As(sigma8, Om, Ob, h, ns):
+def sigma8_to_As(sigma8, Om, Ob, h, ns, old_equation=False):
     """
     Compute the emulated conversion sigma8 -> As as given in Bartlett et al. 2023
     
@@ -318,18 +318,33 @@ def sigma8_to_As(sigma8, Om, Ob, h, ns):
         :Ob (float): The z=0 baryonic density parameter, Omega_b
         :h (float): Hubble constant, H0, divided by 100 km/s/Mpc
         :ns (float): Spectral tilt of primordial power spectrum
+        :old_equation (bool, default=False): Whether to use the version of the sigma8
+            emulator which appeared in v1 of the paper on arXiv (True) or the final
+            published version (and v2 on arXiv).
         
     Returns:
         :As (float): 10^9 times the amplitude of the primordial P(k)
     """
     
-    a = [0.161320734729, 0.343134609906, - 7.859274, 18.200232, 3.666163, 0.003359]
-    As = ((sigma8 - a[5]) / (a[2] * Ob + np.log(a[3] * Om)) / np.log(a[4] * h) -
-        a[1] * ns) / a[0]
+    if old_equation:
+        a = [0.161320734729, 0.343134609906, - 7.859274, 18.200232, 3.666163, 0.003359]
+        As = ((sigma8 - a[5]) / (a[2] * Ob + np.log(a[3] * Om)) / np.log(a[4] * h) -
+            a[1] * ns) / a[0]
+    else:
+        a = [0.51172, 0.04593, 0.73983, 1.56738, 1.16846, 0.59348, 0.19994, 25.09218,
+            9.36909, 0.00011]
+        f = (
+            a[0] * Om + a[1] * h + a[2] * (
+            (Om - a[3] * Ob)
+            * (np.log(a[4] * Om) - a[5] * ns)
+            * (ns + a[6] * h * (a[7] * Ob - a[8] * ns + np.log(a[9] * h)))
+            )
+        )
+        As = (sigma8 / f) ** 2
     
     return As
     
-def As_to_sigma8(As, Om, Ob, h, ns):
+def As_to_sigma8(As, Om, Ob, h, ns, old_equation=False):
     """
     Compute the emulated conversion As -> sigma8 as given in Bartlett et al. 2023
     
@@ -339,16 +354,31 @@ def As_to_sigma8(As, Om, Ob, h, ns):
         :Ob (float): The z=0 baryonic density parameter, Omega_b
         :h (float): Hubble constant, H0, divided by 100 km/s/Mpc
         :ns (float): Spectral tilt of primordial power spectrum
-        
+        :old_equation (bool, default=False): Whether to use the version of the sigma8
+            emulator which appeared in v1 of the paper on arXiv (True) or the final
+            published version (and v2 on arXiv).
+                
     Returns:
         :sigma8 (float): Root-mean-square density fluctuation when the linearly
             evolved field is smoothed with a top-hat filter of radius 8 Mpc/h
     """
     
-    a = [0.161320734729, 0.343134609906, - 7.859274, 18.200232, 3.666163, 0.003359]
-    sigma8 = (
-        (a[0] * As + a[1] * ns) * (a[2] * Ob + np.log(a[3] * Om))
-        * np.log(a[4] * h) + a[5]
-    )
+    if old_equation:
+        a = [0.161320734729, 0.343134609906, - 7.859274, 18.200232, 3.666163, 0.003359]
+        sigma8 = (
+            (a[0] * As + a[1] * ns) * (a[2] * Ob + np.log(a[3] * Om))
+            * np.log(a[4] * h) + a[5]
+        )
+    else:
+        a = [0.51172, 0.04593, 0.73983, 1.56738, 1.16846, 0.59348, 0.19994, 25.09218,
+            9.36909, 0.00011]
+        f = (
+            a[0] * Om + a[1] * h + a[2] * (
+            (Om - a[3] * Ob)
+            * (np.log(a[4] * Om) - a[5] * ns)
+            * (ns + a[6] * h * (a[7] * Ob - a[8] * ns + np.log(a[9] * h)))
+            )
+        )
+        sigma8 = f * np.sqrt(As)
 
     return sigma8

@@ -40,6 +40,24 @@ print('\nf90 sigma8 = ', sigma8)
 sigma8 = linear.As_to_sigma8(As, Om, Ob, h, ns)
 print('py3 sigma8 = ', sigma8)
 
+# Compare sigma8 values (old equation)
+sigma8 = f90_syrenhalofit.emulators.old_as_to_sigma8(As, Om, Ob, h, ns)
+print('\nf90 sigma8 (old eq) = ', sigma8)
+sigma8 = linear.As_to_sigma8(As, Om, Ob, h, ns, old_equation=True)
+print('py3 sigma8 (old eq) = ', sigma8)
+
+# Compare As values
+As_new = f90_syrenhalofit.emulators.sigma8_to_as(sigma8, Om, Ob, h, ns)
+print('\nf90 As = ', As_new)
+As_new = linear.sigma8_to_As(sigma8, Om, Ob, h, ns)
+print('py3 As = ', As_new)
+
+# Compare As values (old equation)
+As_new = f90_syrenhalofit.emulators.old_sigma8_to_as(sigma8, Om, Ob, h, ns)
+print('\nf90 As (old eq) = ', As_new)
+As_new = linear.sigma8_to_As(sigma8, Om, Ob, h, ns, old_equation=True)
+print('py3 As (old eq) = ', As_new)
+
 # Compare E&H formulae
 EH_f90 = f90_syrenhalofit.emulators.eisenstein_hu_pk(k, sigma8, Om, Ob, h, ns)
 EH_py3 = linear.pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns)
