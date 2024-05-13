@@ -185,9 +185,11 @@ contains
         a = 1.0 / 3.0
         b = 1.0
         c = 11.0 / 6.0
-        z = (Om - 1.0) / Om * acosmo**3
-        
+
+	z = (Om - 1.0) / Om
         D0 = 1.0 * hypergeometric_2F1(a, b, c, z)
+
+	z = (Om - 1.0) / Om * acosmo**3
         Da = acosmo * hypergeometric_2F1(a, b, c, z)
         Da = Da / D0
         
