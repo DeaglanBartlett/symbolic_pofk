@@ -14,19 +14,14 @@ permissions:
 
 jobs:
   build:
-
     runs-on: macos-latest
-    
     strategy:
       fail-fast: false
       matrix:
-        toolchain:
-          - {compiler: gcc, version: 13}
-          - {compiler: intel-classic, version: '2021.10'}
-        include:
-          - toolchain: {compiler: gcc, version: 12}
-        exclude:
-          - toolchain: {compiler: intel-classic, version: '2021.10'}
+        compiler-version: 
+          - gcc-13
+          - gcc-12
+          - intel-classic-2021.10
 
     steps:
       - uses: actions/checkout@v3
@@ -45,11 +40,12 @@ jobs:
           ruff check .
         continue-on-error: false
         
-     - uses: fortran-lang/setup-fortran@v1
+      - name: Set up Fortran compiler
+        uses: fortran-lang/setup-fortran@v1
         id: setup-fortran
         with:
-          compiler: ${{ matrix.toolchain.compiler }}
-          version: ${{ matrix.toolchain.version }}
+          compiler: ${{ matrix.compiler-version.split('-')[0] }}
+          version: ${{ matrix.compiler-version.split('-')[1] }}
           
       - name: Compile and run Fortran code
         run: |
