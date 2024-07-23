@@ -3,6 +3,12 @@
 [![arXiv](https://img.shields.io/badge/arXiv-2311.15865-b31b1b.svg)](https://arxiv.org/abs/2311.15865)
 [![arXiv](https://img.shields.io/badge/arXiv-2402.17492-b31b1b.svg)](https://arxiv.org/abs/2402.17492)
 
+[![Coverage](https://img.shields.io/codecov/c/github/DeaglanBartlett/symbolic_pofk)](https://app.codecov.io/gh/DeaglanBartlett/symbolic_pofk)
+[![Build Status](https://github.com/DeaglanBartlett/symbolic_pofk/actions/workflows/build-linux.yml/badge.svg)](https://github.com/DeaglanBartlett/symbolic_pofk/actions/workflows/build-linux.yml)
+[![Build Status MacOS](https://github.com/DeaglanBartlett/symbolic_pofk/actions/workflows/build-mac.yml/badge.svg)](https://github.com/DeaglanBartlett/symbolic_pofk/actions/workflows/build-mac.yml)
+
+
+
 Precise symbolic emulators of the linear and non-linear matter power spectra and for the conversion
 $\sigma_8 \leftrightarrow A_{\rm s}$ as a function of cosmology.
 Here we give the emulators as simple python functions and as a fortran90 routine, but these can be 
