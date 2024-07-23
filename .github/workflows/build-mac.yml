@@ -39,17 +39,8 @@ jobs:
           brew install gcc
           GFORTRAN_PATH=$(brew --prefix)/bin/gfortran
           echo "GFORTRAN_PATH=$GFORTRAN_PATH"
-          if [ -x "$GFORTRAN_PATH" ]; then
-            sudo ln -s $GFORTRAN_PATH /usr/local/bin/gfortran || true
-            sudo ln -s $GFORTRAN_PATH /usr/local/bin/f90 || true
-            sudo ln -s $GFORTRAN_PATH /usr/local/bin/f77 || true
-            sudo ln -s $GFORTRAN_PATH /usr/local/bin/f95 || true
-            echo "Adding $GFORTRAN_PATH to PATH"
-            echo "$GFORTRAN_PATH" >> $GITHUB_PATH
-          else
-            echo "gfortran not found"
-            exit 1
-          fi
+          echo "Adding $GFORTRAN_PATH to PATH"
+          echo "$GFORTRAN_PATH" >> $GITHUB_PATH
           gfortran --version
       - name: Compile and run Fortran code
         run: |
