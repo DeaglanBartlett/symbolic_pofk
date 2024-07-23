@@ -37,7 +37,7 @@ jobs:
         run: |
           brew update
           brew install gcc
-          brew install --cask gfortran
+          which gfortran
       - name: Compile and run Fortran code
         run: |
           ./setup_fortran.sh
