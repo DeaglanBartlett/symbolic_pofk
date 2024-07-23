@@ -18,18 +18,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        compiler: [gcc, intel-classic]
-        version: [13, 12, '2021.10']
+        compiler: [gcc]
+        version: [13]
         include:
           - compiler: gcc
             version: 13
-          - compiler: gcc
-            version: 12
-          - compiler: intel-classic
-            version: '2021.10'
-        exclude:
-          - compiler: intel-classic
-            version: '2021.10'
 
     steps:
       - uses: actions/checkout@v3
