@@ -33,18 +33,8 @@ jobs:
           pip install ruff
           ruff check .
         continue-on-error: false
-      - name: Set up Fortran compiler
-        run: |
-          brew update
-          brew install gcc
-          which gfortran-*
-          ln -s /usr/local/bin/gfortran /usr/local/bin/f90
-          ln -s /usr/local/bin/gfortran /usr/local/bin/f77
-          ln -s /usr/local/bin/gfortran /usr/local/bin/f95
-          echo 'export FC=gfortran' >> $GITHUB_ENV
-          echo 'export F77=gfortran' >> $GITHUB_ENV
-          echo 'export F90=gfortran' >> $GITHUB_ENV
       - name: Compile and run Fortran code
+        uses: modflowpy/install-gfortran-action@v1
         run: |
           ./setup_fortran.sh
           ./fortran/syrenhalofit
