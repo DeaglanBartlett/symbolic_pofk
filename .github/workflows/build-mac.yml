@@ -5,7 +5,7 @@ name: build-mac
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "7-add-unit-tests" ]
   pull_request:
     branches: [ "main" ]
 
@@ -33,3 +33,11 @@ jobs:
           pip install ruff
           ruff check .
         continue-on-error: false
+      - name: Set up Fortran compiler
+        run: |
+          brew update
+          brew install gcc
+      - name: Compile and run Fortran code
+        run: |
+          ./setup_fortran.sh
+          ./fortran/syrenhalofit

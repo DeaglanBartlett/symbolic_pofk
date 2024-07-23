@@ -35,7 +35,7 @@ jobs:
         continue-on-error: false
       - name: Set up Fortran compiler
         run: sudo apt-get install -y gfortran
-      - name: Compile Fortran code
+      - name: Compile and run Fortran code
         run: |
           ./setup_fortran.sh
           ./fortran/syrenhalofit
