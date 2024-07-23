@@ -38,5 +38,6 @@ jobs:
       - name: Compile Fortran code
         run: |
           ./setup_fortran.sh
+          pwd
           ls
-          ./f90_syrenhalofit
+          ./syrenhalofit
