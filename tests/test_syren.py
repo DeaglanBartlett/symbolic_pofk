@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import camb
+import unittest
 
 import symbolic_pofk.linear as linear
 import symbolic_pofk.syrenhalofit as syrenhalofit
@@ -70,6 +71,29 @@ def test_lcdm():
         logF = np.log(pk / pk_eh)
         assert np.allclose(logF_camb, logF, atol=1e-2)
         
+        # Check warning raised if run outside range of fit
+        knew = np.logspace(np.log10(kmin/10), np.log10(kmax*10), nk)
+        with unittest.TestCase().assertWarns(UserWarning) as cm:
+            pk = linear.plin_emulated(knew, sigma8, Om, Ob, h, ns,
+                emulator=emulator, extrapolate=False)
+        # Verify the warning message
+        unittest.TestCase().assertEqual(str(cm.warning),
+            "Not using Bartlett et al. formula outside tested regime")
+            
+    # Check asking for a different emulator raises NotImplementedError
+    unittest.TestCase().assertRaises(
+        NotImplementedError,
+        linear.plin_emulated,
+        k, sigma8, Om, Ob, h, ns,
+        emulator='something_else',
+        extrapolate=True
+    )
+        
+    # Check that there is little difference between colossus and not using it
+    pk_with = linear.pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns, use_colossus=False)
+    pk_without = linear.pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns, use_colossus=True)
+    np.allclose(np.log(pk_with), np.log(pk_without), atol=1e-2)
+        
     # Check halofit give similar results
     pk_bartlett = syrenhalofit.run_halofit(k, sigma8, Om, Ob, h, ns, a,
         emulator='fiducial', extrapolate=True, which_params='Bartlett',
@@ -78,6 +102,17 @@ def test_lcdm():
         emulator='fiducial', extrapolate=True, which_params='Takahashi',
         add_correction=False)
     assert np.allclose(np.log(pk_bartlett), np.log(pk_takahashi), atol=1e-1)
+    
+    
+    # Check asking for a different halofit raises NotImplementedError
+    unittest.TestCase().assertRaises(
+        NotImplementedError,
+        syrenhalofit.run_halofit,
+        k, sigma8, Om, Ob, h, ns, a,
+        emulator='fiducial',
+        extrapolate=True,
+        which_params='something_else',
+    )
     
     # Check CAMB halofit similar to Takahashi above
     pars = camb.CAMBparams()
@@ -105,6 +140,11 @@ def test_lcdm():
         emulator='fiducial', extrapolate=True, which_params='Bartlett',
         add_correction=True)
     assert np.allclose(np.log(pk_bartlett), np.log(pk_syrenhalofit), atol=1e-1)
+    
+    # Check halofit correction is what is expected
+    A_emu = syrenhalofit.A_emulated(k, sigma8, Om, Ob, h, ns, a)
+    A_check = pk_syrenhalofit / pk_bartlett - 1
+    assert np.allclose(A_emu, A_check, atol=1e-4)
         
     return
 
