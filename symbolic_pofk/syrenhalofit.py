@@ -1,5 +1,4 @@
 import numpy as np
-from colossus.cosmology import cosmology
 import symbolic_pofk.linear as linear
 
 def ksigma_emulated(sigma8, Om, Ob, h, ns, a):
