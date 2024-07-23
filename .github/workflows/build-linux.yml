@@ -36,6 +36,7 @@ jobs:
       - name: Set up Fortran compiler
         run: sudo apt-get install -y gfortran
       - name: Compile Fortran code
-        run: ./setup_fortran.sh
-        ls
-        ./f90_syrenhalofit
+        run: |
+          ./setup_fortran.sh
+          ls
+          ./f90_syrenhalofit
