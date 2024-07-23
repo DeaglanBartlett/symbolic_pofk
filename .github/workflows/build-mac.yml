@@ -39,6 +39,7 @@ jobs:
           brew install gcc
           ln -s $(which gfortran) /usr/local/bin/f90
           ln -s $(which gfortran) /usr/local/bin/f77
+          ln -s $(which gfortran) /usr/local/bin/f95
           echo 'export FC=gfortran' >> $GITHUB_ENV
           echo 'export F77=gfortran' >> $GITHUB_ENV
           echo 'export F90=gfortran' >> $GITHUB_ENV
