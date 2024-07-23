@@ -16,6 +16,17 @@ jobs:
   build:
 
     runs-on: macos-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain:
+          - {compiler: gcc, version: 13}
+          - {compiler: intel-classic, version: '2021.10'}
+        include:
+          - toolchain: {compiler: gcc, version: 12}
+        exclude:
+          - toolchain: {compiler: intel-classic, version: '2021.10'}
 
     steps:
       - uses: actions/checkout@v3
@@ -33,16 +44,13 @@ jobs:
           pip install ruff
           ruff check .
         continue-on-error: false
-      - name: Install gcc
-        run: |
-          brew update
-          brew install gcc
-          GFORTRAN_PATH=$(brew --prefix)/bin/gfortran
-          ls $GFORTRAN_PATH*
-          echo "GFORTRAN_PATH=$GFORTRAN_PATH"
-          echo "Adding $GFORTRAN_PATH to PATH"
-          echo "$GFORTRAN_PATH" >> $GITHUB_PATH
-          gfortran --version
+        
+     - uses: fortran-lang/setup-fortran@v1
+        id: setup-fortran
+        with:
+          compiler: ${{ matrix.toolchain.compiler }}
+          version: ${{ matrix.toolchain.version }}
+          
       - name: Compile and run Fortran code
         run: |
           ./setup_fortran.sh
