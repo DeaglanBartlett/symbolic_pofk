@@ -37,8 +37,7 @@ jobs:
         run: |
           brew update
           brew install gcc
-      - name: Install Fortran
-        uses: modflowpy/install-gfortran-action@v1
+          brew install --cask gfortran
       - name: Compile and run Fortran code
         run: |
           ./setup_fortran.sh
