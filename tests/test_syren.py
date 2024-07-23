@@ -103,7 +103,6 @@ def test_lcdm():
         add_correction=False)
     assert np.allclose(np.log(pk_bartlett), np.log(pk_takahashi), atol=1e-1)
     
-    
     # Check asking for a different halofit raises NotImplementedError
     unittest.TestCase().assertRaises(
         NotImplementedError,
@@ -113,7 +112,7 @@ def test_lcdm():
         extrapolate=True,
         which_params='something_else',
     )
-    
+
     # Check CAMB halofit similar to Takahashi above
     pars = camb.CAMBparams()
     pars.set_cosmology(H0=h*100,
