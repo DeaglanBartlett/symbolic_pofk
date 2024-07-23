@@ -33,6 +33,10 @@ jobs:
           pip install ruff
           ruff check .
         continue-on-error: false
+      - name: Install gcc
+        run: |
+          brew update
+          brew install gcc
       - name: Install Fortran
         uses: modflowpy/install-gfortran-action@v1
       - name: Compile and run Fortran code
