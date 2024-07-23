@@ -37,7 +37,8 @@ jobs:
         run: |
           brew update
           brew install gcc
-          which gfortran
+          GFORTRAN_PATH=$(brew --prefix)/bin/gfortran
+          echo "GFORTRAN_PATH=$GFORTRAN_PATH"
       - name: Compile and run Fortran code
         run: |
           ./setup_fortran.sh
