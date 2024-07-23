@@ -39,3 +39,4 @@ jobs:
         run: |
           ./setup_fortran.sh
           ./fortran/syrenhalofit
+          python -c "import symbolic_pofk.f90_syrenhalofit"
