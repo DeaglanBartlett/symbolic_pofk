@@ -14,8 +14,15 @@ permissions:
 
 jobs:
   build:
-
     runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc]
+        version: [13]
+        include:
+          - compiler: gcc
+            version: 13
 
     steps:
       - uses: actions/checkout@v3
@@ -33,3 +40,16 @@ jobs:
           pip install ruff
           ruff check .
         continue-on-error: false
+        
+      - name: Set up Fortran compiler
+        uses: fortran-lang/setup-fortran@v1
+        id: setup-fortran
+        with:
+          compiler: ${{ matrix.compiler }}
+          version: ${{ matrix.version }}
+          
+      - name: Compile and run Fortran code
+        run: |
+          ./setup_fortran.sh
+          ./fortran/syrenhalofit
+          python -c "import symbolic_pofk.f90_syrenhalofit"
