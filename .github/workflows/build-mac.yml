@@ -18,10 +18,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        compiler-version: 
-          - gcc-13
-          - gcc-12
-          - intel-classic-2021.10
+        compiler: [gcc, intel-classic]
+        version: [13, 12, '2021.10']
+        include:
+          - compiler: gcc
+            version: 13
+          - compiler: gcc
+            version: 12
+          - compiler: intel-classic
+            version: '2021.10'
+        exclude:
+          - compiler: intel-classic
+            version: '2021.10'
 
     steps:
       - uses: actions/checkout@v3
@@ -44,8 +52,8 @@ jobs:
         uses: fortran-lang/setup-fortran@v1
         id: setup-fortran
         with:
-          compiler: ${{ matrix.compiler-version.split('-')[0] }}
-          version: ${{ matrix.compiler-version.split('-')[1] }}
+          compiler: ${{ matrix.compiler }}
+          version: ${{ matrix.version }}
           
       - name: Compile and run Fortran code
         run: |
