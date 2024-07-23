@@ -38,7 +38,7 @@ jobs:
           brew update
           brew install gcc
           GFORTRAN_PATH=$(brew --prefix)/bin/gfortran
-          ls $GFORTRAN_PATH
+          ls $GFORTRAN_PATH*
           echo "GFORTRAN_PATH=$GFORTRAN_PATH"
           echo "Adding $GFORTRAN_PATH to PATH"
           echo "$GFORTRAN_PATH" >> $GITHUB_PATH
