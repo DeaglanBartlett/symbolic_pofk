@@ -93,4 +93,19 @@ axs[1].set_ylabel(r'$\log F$')
 axs[1].axhline(0, color='k')
 fig.align_labels()
 fig.tight_layout()
+fig.savefig('planck_2018_comparison.png', bbox_inches='tight')
+
+fig2, ax2 = plt.subplots(1, 1, figsize=(7, 4))
+frac_error = np.abs((np.sqrt(pk_camb) - np.sqrt(pk_fid)) / np.sqrt(pk_camb)) * 100
+ax2.semilogx(k, frac_error, label='Bartlett et al. 2023', color=cmap(2))
+ax2.legend()
+for y in [0.5, 1.0, 1.5]:
+    ax2.axhline(y, color='k', ls='--')
+ax2.set_xlabel(r'$k \ / \ h {\rm \, Mpc}^{-1}$')
+ax2.set_ylabel(r'$\left| \frac{T_{\rm camb} - T_{\rm fit}}{T_{\rm camb}} \right| \times 100$', fontsize=14)
+ax2.set_title('Planck 2018 Best-Fit Cosmology')
+ax2.set_ylim(0, None)
+fig2.tight_layout()
+fig2.savefig('planck_2018_errors.png', bbox_inches='tight')
+
 plt.show()

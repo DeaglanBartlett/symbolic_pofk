@@ -166,3 +166,4 @@ fortran/a.out
 *.ipynb_checkpoints/
 fortran/syrenhalofit
 fortran/output.txt
+examples/*png
