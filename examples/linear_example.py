@@ -17,8 +17,11 @@ import camb
 
 # Define k range
 kmin = 9e-3
+kmin = 1e-4
 kmax = 9
 nk = 400
+extrapolate_kmin = 2e-3
+extrapolate_kmax = kmax
 k = np.logspace(np.log10(kmin), np.log10(kmax), nk)
 
 # Cosmological parameters
@@ -45,12 +48,12 @@ print('As_new = ', As_new)
 pk_eh = linear.pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns)
 pk_eh_b = linear.pk_EisensteinHu_b(k, sigma8, Om, Ob, h, ns)
 pk_fid = linear.plin_emulated(k, sigma8, Om, Ob, h, ns,
-    emulator='fiducial', extrapolate=True)
+    emulator='fiducial', extrapolate=False, kmin=extrapolate_kmin, kmax=extrapolate_kmax)
 pk_prec = linear.plin_emulated(k, sigma8, Om, Ob, h, ns,
-    emulator='max_precision', extrapolate=True)
+    emulator='max_precision', extrapolate=False, kmin=extrapolate_kmin, kmax=extrapolate_kmax)
 logF_eh_b = np.log(pk_eh_b / pk_eh)
-logF_fid = linear.logF_fiducial(k, sigma8, Om, Ob, h, ns, extrapolate=True)
-logF_prec = linear.logF_max_precision(k, sigma8, Om, Ob, h, ns, extrapolate=True)
+logF_fid = linear.logF_fiducial(k, sigma8, Om, Ob, h, ns, extrapolate=False, kmin=extrapolate_kmin, kmax=extrapolate_kmax)
+logF_prec = linear.logF_max_precision(k, sigma8, Om, Ob, h, ns, extrapolate=False, kmin=extrapolate_kmin, kmax=extrapolate_kmax)
 
 # Compute P(k) using camb
 pars = camb.CAMBparams()
@@ -77,18 +80,18 @@ logF_camb = np.log(pk_camb / pk_eh)
 
 fig, axs = plt.subplots(2, 1, figsize=(10,6), sharex=True)
 cmap = plt.get_cmap('Set1')
-axs[0].loglog(k, pk_eh, label='Zero Baryon (Eisenstein & Hu 1998)', color=cmap(0))
-axs[0].loglog(k, pk_eh_b, label='Baryon (Eisenstein & Hu 1998)', color=cmap(1))
-axs[0].loglog(k, pk_fid, label='Fiducial (Bartlett et al. 2023)', color=cmap(2))
-axs[0].loglog(k, pk_prec, label='Max precision (Bartlett et al. 2023)', color=cmap(3))
-axs[0].loglog(k, pk_camb, label='camb', color=cmap(4), ls='--')
+axs[0].semilogx(k, pk_eh / pk_camb, label='Zero Baryon (Eisenstein & Hu 1998)', color=cmap(0))
+axs[0].semilogx(k, pk_eh_b / pk_camb, label='Baryon (Eisenstein & Hu 1998)', color=cmap(1))
+axs[0].semilogx(k, pk_fid / pk_camb, label='Fiducial (Bartlett et al. 2023)', color=cmap(2))
+axs[0].semilogx(k, pk_prec / pk_camb, label='Max precision (Bartlett et al. 2023)', color=cmap(3))
+axs[0].semilogx(k, pk_camb / pk_camb, label='camb', color=cmap(4), ls='--')
 axs[1].semilogx(k, logF_eh_b, label='Baryon', color=cmap(1))
 axs[1].semilogx(k, logF_fid, label='Fiducial', color=cmap(2))
 axs[1].semilogx(k, logF_prec, label='Max precision', color=cmap(3))
 axs[1].semilogx(k, logF_camb, label='camb', color=cmap(4), ls='--')
 axs[0].legend()
 axs[1].set_xlabel(r'$k \ / \ h {\rm \, Mpc}^{-1}$')
-axs[0].set_ylabel(r'$P(k) \ / \ ({\rm \, Mpc} / h)^3$')
+axs[0].set_ylabel(r'$P(k) / P_{\rm camb}(k)$')
 axs[1].set_ylabel(r'$\log F$')
 axs[1].axhline(0, color='k')
 fig.align_labels()
