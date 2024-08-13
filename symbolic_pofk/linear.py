@@ -2,7 +2,6 @@ import numpy as np
 import warnings
 import scipy.integrate
 from colossus.cosmology import cosmology
-import camb
 
 def pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns, use_colossus=False, integral_norm=True):
     """

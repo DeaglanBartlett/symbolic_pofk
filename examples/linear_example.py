@@ -108,6 +108,8 @@ ax2.set_xlabel(r'$k \ / \ h {\rm \, Mpc}^{-1}$')
 ax2.set_ylabel(r'$\left| \frac{T_{\rm camb} - T_{\rm fit}}{T_{\rm camb}} \right| \times 100$', fontsize=14)
 ax2.set_title('Planck 2018 Best-Fit Cosmology')
 ax2.set_ylim(0, None)
+ax2.axvline(extrapolate_kmin, color='k', ls='--')
+ax2.axvline(extrapolate_kmax, color='k', ls='--')
 fig2.tight_layout()
 fig2.savefig('planck_2018_errors.png', bbox_inches='tight')
 
