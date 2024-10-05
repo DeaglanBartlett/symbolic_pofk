@@ -1,5 +1,5 @@
 import numpy as np
-from linear_plus import plin_plus_emulated
+from .linear_plus import plin_plus_emulated
 
 def pnl_plus_emulated(k, As, Om, Ob, h, ns, mnu, w0, wa, a):
 
