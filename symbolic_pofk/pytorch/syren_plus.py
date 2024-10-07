@@ -4,7 +4,7 @@ from .linear_plus import plin_plus_emulated
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def pnl_plus_emulated(k, theta_batch):
-    '''
+    """
     Compute the non-linear power spectrum using a symbolic approximation
     to the linear power spectrum. 
     
@@ -24,7 +24,7 @@ def pnl_plus_emulated(k, theta_batch):
         
     Returns:
         :pk_nl (torch.Tensor): computed nonlinear power spectrum for each k and theta in the batch
-    '''
+    """
     
     g= torch.tensor([0.2107, 0.0035, 0.0667, 0.0442, 1.2809, 0.2287, 0.1122, 4.3318, 1.1857, 3.3117, 14.2829, 
                  0.9039, 0.0749, 0.0741, 0.1277, 27.6818, 24.8736, 0.6264, 0.3035, 0.6069, 0.7882, 0.4811, 
@@ -63,7 +63,7 @@ def pnl_plus_emulated(k, theta_batch):
 
 def pnl_bias(k_batch):
     """
-    the offset of the emulated non-linear power spectrum from euclidemulator2
+    The offset of the emulated non-linear power spectrum from euclidemulator2
 
     Args:
         :k_batch (torch.Tensor): k values [h/Mpc] with shape (n_k,1)

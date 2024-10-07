@@ -1,7 +1,7 @@
 import numpy as np
 
 def As_to_sigma8(As, Om, Ob, h, ns, mnu, w0, wa):
-    '''
+    """
     Compute the emulated conversion As -> sigma8 
 
     Args:
@@ -17,7 +17,7 @@ def As_to_sigma8(As, Om, Ob, h, ns, mnu, w0, wa):
     Returns:
         :sigma8 (float): Root-mean-square density fluctuation when the linearly
             evolved field is smoothed with a top-hat filter of radius 8 Mpc/h
-    '''
+    """
 
 
     c = [0.0187, 2.4891, 12.9495, 0.7527, 
@@ -40,7 +40,7 @@ def As_to_sigma8(As, Om, Ob, h, ns, mnu, w0, wa):
     return result*np.sqrt(As)
 
 def sigma8_to_As(sigma8, Om, Ob, h, ns, mnu, w0, wa):
-    '''
+    """
     Compute the emulated conversion sigma8 -> As
 
     Args:
@@ -55,7 +55,7 @@ def sigma8_to_As(sigma8, Om, Ob, h, ns, mnu, w0, wa):
     
     Returns:
         :As (float): 10^9 times the amplitude of the primordial P(k)
-    '''
+    """
 
     c = [0.0187, 2.4891, 12.9495, 0.7527, 
          2.3685, 1.5062, 1.3057, 0.0885, 
@@ -77,8 +77,8 @@ def sigma8_to_As(sigma8, Om, Ob, h, ns, mnu, w0, wa):
     return (sigma8/result)**2
 
 def growth_correction_R(As, Om, Ob, h, ns, mnu, w0, wa, a):
-    '''
-    correction to the growth factor 
+    """
+    Correction to the growth factor 
 
     Args:
         :As (float): 10^9 times the amplitude of the primordial P(k)
@@ -93,7 +93,7 @@ def growth_correction_R(As, Om, Ob, h, ns, mnu, w0, wa, a):
 
     Returns:
         :result (float): correction to the growth factor
-    '''
+    """
 
     d = np.array([0.8545, 0.394 , 0.7294, 0.5347, 0.4662, 4.6669, 
                   0.4136, 1.4769,0.5959, 0.4553, 0.0799, 5.8311, 
@@ -113,7 +113,7 @@ def growth_correction_R(As, Om, Ob, h, ns, mnu, w0, wa, a):
     return result
 
 def log10_S(k, As, Om, Ob, h, ns, mnu, w0, wa):
-    '''
+    """
     Corrections to the present-day linear power spectrum
 
     Args:
@@ -130,7 +130,7 @@ def log10_S(k, As, Om, Ob, h, ns, mnu, w0, wa):
     
     Returns:
         :result (np.ndarray): Corrections to the present-day linear power spectrum
-    '''
+    """
     
     e = np.array([0.2841, 0.1679, 0.0534, 0.0024, 0.1183, 0.3971, 
                   0.0985, 0.0009, 0.1258, 0.2476,0.1841, 0.0316, 
@@ -267,7 +267,7 @@ def get_eisensteinhu_nw(k, As, Om, Ob, h, ns, mnu, w0, wa):
     return  pk
 
 def logF_fiducial(k, As, Om, Ob, h, ns, mnu, w0, wa):
-    '''
+    """
     Compute the emulated logarithm of the ratio between the true linear power spectrum 
     and the Eisenstein & Hu 1998 fit for LCDM modified from implementation in linear.py (Bartlett et al. 2023).
 
@@ -285,7 +285,7 @@ def logF_fiducial(k, As, Om, Ob, h, ns, mnu, w0, wa):
 
     Returns:
         :logF (np.ndarray): The emulated logarithm of the ratio between the true linear power spectrum
-    '''
+    """
     
     b = [0.05448654, 0.00379, 0.0396711937097927, 0.127733431568858, 1.35,
         4.053543862744234, 0.0008084539054750851, 1.8852431049189666,

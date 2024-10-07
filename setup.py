@@ -13,8 +13,9 @@ setup(
         'numpy',
         'colossus',
         'matplotlib',
-	'scipy',
+        'scipy',
         ],
+    extras_require = {'torch':['torch']},
     classifiers=[
         'Development Status :: 1 - Planning',
         'Intended Audience :: Science/Research',

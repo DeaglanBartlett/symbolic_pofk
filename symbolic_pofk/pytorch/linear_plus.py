@@ -5,7 +5,7 @@ import math
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def growth_correction_R(theta_batch):
-    '''
+    """
     Correction to the growth factor for a batch of parameters.
 
     Args:
@@ -23,7 +23,7 @@ def growth_correction_R(theta_batch):
 
     Returns:
         :result (torch.Tensor): The correction to the growth factor for the given parameters
-    '''
+    """
     
     d = torch.tensor([0.8545, 0.394, 0.7294, 0.5347, 0.4662, 4.6669, 
                       0.4136, 1.4769, 0.5959, 0.4553, 0.0799, 5.8311, 
@@ -46,7 +46,7 @@ def growth_correction_R(theta_batch):
     return result
 
 def log10_S(k_batch, theta_batch):
-    '''
+    """
     Corrections to the present-day linear power spectrum for a batch of parameters.
 
     Args:
@@ -65,7 +65,7 @@ def log10_S(k_batch, theta_batch):
 
     Returns:
         :result (torch.Tensor): Corrections to the present-day linear power spectrum
-    '''
+    """
 
     e = torch.tensor([0.2841, 0.1679, 0.0534, 0.0024, 0.1183, 0.3971, 
                       0.0985, 0.0009, 0.1258, 0.2476, 0.1841, 0.0316, 
@@ -206,7 +206,7 @@ def get_eisensteinhu_nw(k_batch, theta_batch):
     return pk_batch
 
 def logF_fiducial(k_batch,theta_batch):
-    '''
+    """
     Compute the emulated logarithm of the ratio between the true linear power spectrum 
     and the Eisenstein & Hu 1998 fit for LCDM modified from implementation in linear.py (Bartlett et al. 2023).
 
@@ -226,7 +226,7 @@ def logF_fiducial(k_batch,theta_batch):
 
     Returns:
         :logF (torch.Tensor): The emulated logarithm of the ratio between the true linear power spectrum
-    '''
+    """
     
     b = torch.tensor([0.05448654, 0.00379, 0.0396711937097927, 0.127733431568858, 1.35,
         4.053543862744234, 0.0008084539054750851, 1.8852431049189666,
@@ -268,7 +268,7 @@ def logF_fiducial(k_batch,theta_batch):
     return logF
 
 def plin_plus_emulated(k, theta_batch):
-    '''
+    """
     Fiducial power spectrum given in Bartlett et al. 2023 for a batch of parameters.
     
     Args:
@@ -287,7 +287,7 @@ def plin_plus_emulated(k, theta_batch):
 
     Returns:
         :Pk (torch.Tensor): computed fiducial power spectrum for each k and theta in the batch
-    '''
+    """
     
     # add dim to k so that it can be broadcasted with theta_batch
     k_batch = k.unsqueeze(1).to(device) 
