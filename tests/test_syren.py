@@ -10,6 +10,7 @@ import symbolic_pofk.syrenhalofit as syrenhalofit
 import symbolic_pofk.linear_plus as linear_plus
 import symbolic_pofk.syren_plus as syren_plus
 
+import symbolic_pofk.pytorch.linear as torch_linear
 import symbolic_pofk.pytorch.linear_plus as torch_linear_plus
 import symbolic_pofk.pytorch.syren_plus as torch_syren_plus
 
@@ -100,6 +101,13 @@ def test_lcdm():
     pk_with = linear.pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns, use_colossus=False)
     pk_without = linear.pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns, use_colossus=True)
     np.allclose(np.log(pk_with), np.log(pk_without), atol=1e-2)
+
+    # Check that numpy and torch give the same results
+    kt = torch.tensor(k).reshape(-1, 1)
+    theta = torch.tensor([sigma8, Om, Ob, h, ns], requires_grad=True).reshape(1, -1)
+    logF_torch = torch_linear.logF_fiducial(kt, theta)[:,0]
+    logF = linear.logF_fiducial(k, sigma8, Om, Ob, h, ns, extrapolate=True)
+    assert np.allclose(logF, logF_torch.detach().numpy(), atol=1e-6)
         
     # Check halofit give similar results
     pk_bartlett = syrenhalofit.run_halofit(k, sigma8, Om, Ob, h, ns, a,
@@ -279,7 +287,7 @@ def test_torch_syren_plus():
     pnl_torch = torch_syren_plus.pnl_plus_emulated(k, theta)
 
     # Check that the results are close
-    assert np.allclose(np.log(plin_numpy), np.log(plin_torch.detach().numpy()), atol=1e-5)
-    assert np.allclose(np.log(pnl_numpy), np.log(pnl_torch.detach().numpy()), atol=1e-5)
+    assert np.allclose(np.log(plin_numpy), np.log(plin_torch.detach().numpy()), atol=1e-6)
+    assert np.allclose(np.log(pnl_numpy), np.log(pnl_torch.detach().numpy()), atol=1e-6)
 
     return
