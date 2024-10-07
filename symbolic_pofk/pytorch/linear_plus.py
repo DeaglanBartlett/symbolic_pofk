@@ -4,13 +4,27 @@ import math
 # Check if a GPU is available and set the device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-def R(theta_batch):
+def growth_correction_R(theta_batch):
     '''
     Correction to the growth factor for a batch of parameters.
 
-    args:
-    - theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 9)
+    Args:
+        :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 9),
+            the 9 parameters are :
+                As: 10^9 times the amplitude of the primordial P(k)
+                Om: The z=0 total matter density parameter
+                Ob: The z=0 baryonic density parameter
+                h: Hubble constant, H0, divided by 100 km/s/Mpc
+                ns: Spectral tilt of primordial power spectrum
+                mnu: Sum of neutrino masses [eV / c^2]
+                w0: Time independent part of the dark energy EoS
+                wa: Time dependent part of the dark energy EoS
+                a: The scale factor to evaluate P(k) at
+
+    Returns:
+        :result (torch.Tensor): The correction to the growth factor for the given parameters
     '''
+    
     d = torch.tensor([0.8545, 0.394, 0.7294, 0.5347, 0.4662, 4.6669, 
                       0.4136, 1.4769, 0.5959, 0.4553, 0.0799, 5.8311, 
                       5.8014, 6.7085, 0.3445, 1.2498, 0.3756, 0.2136], device=device)
@@ -35,10 +49,24 @@ def log10_S(k_batch, theta_batch):
     '''
     Corrections to the present-day linear power spectrum for a batch of parameters.
 
-    args:
-    - k_batch (torch.Tensor): k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
-    - theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 9)
+    Args:
+        :k_batch (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
+        :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 9),
+            the 9 parameters are :
+                As: 10^9 times the amplitude of the primordial P(k)
+                Om: The z=0 total matter density parameter
+                Ob: The z=0 baryonic density parameter
+                h: Hubble constant, H0, divided by 100 km/s/Mpc
+                ns: Spectral tilt of primordial power spectrum
+                mnu: Sum of neutrino masses [eV / c^2]
+                w0: Time independent part of the dark energy EoS
+                wa: Time dependent part of the dark energy EoS
+                a: The scale factor to evaluate P(k) at
+
+    Returns:
+        :result (torch.Tensor): Corrections to the present-day linear power spectrum
     '''
+
     e = torch.tensor([0.2841, 0.1679, 0.0534, 0.0024, 0.1183, 0.3971, 
                       0.0985, 0.0009, 0.1258, 0.2476, 0.1841, 0.0316, 
                       0.1385, 0.2825, 0.8098, 0.019, 0.1376, 0.3733], device=device)
@@ -71,9 +99,19 @@ def get_approximate_D(k_batch, theta_batch):
     and Eisenstein & Hu 1997 (D_cbnu).
     
     Args:
-        :k_batch (torch.Tensor): k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
-        :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 9)
-        
+        :k_batch (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
+        :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 9),
+            the 9 parameters are :
+                As: 10^9 times the amplitude of the primordial P(k)
+                Om: The z=0 total matter density parameter
+                Ob: The z=0 baryonic density parameter
+                h: Hubble constant, H0, divided by 100 km/s/Mpc
+                ns: Spectral tilt of primordial power spectrum
+                mnu: Sum of neutrino masses [eV / c^2]
+                w0: Time independent part of the dark energy EoS
+                wa: Time dependent part of the dark energy EoS
+                a: The scale factor to evaluate P(k) at
+
     Returns:
         :D (torch.Tensor): Approximate linear growth factor at corresponding k values
     """
@@ -116,18 +154,27 @@ def get_approximate_D(k_batch, theta_batch):
     
     return D
 
-def get_eisensteinhu(k_batch, theta_batch):
+def get_eisensteinhu_nw(k_batch, theta_batch):
     """
     Compute the no-wiggles Eisenstein & Hu approximation
     to the linear P(k) at redshift zero for a batch of parameters.
     
     Args:
-        :k_batch (torch.Tensor): k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
-        :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 9)
+        :k_batch (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
+        :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 9),
+            the 9 parameters are :
+                As: 10^9 times the amplitude of the primordial P(k)
+                Om: The z=0 total matter density parameter
+                Ob: The z=0 baryonic density parameter
+                h: Hubble constant, H0, divided by 100 km/s/Mpc
+                ns: Spectral tilt of primordial power spectrum
+                mnu: Sum of neutrino masses [eV / c^2]
+                w0: Time independent part of the dark energy EoS
+                wa: Time dependent part of the dark energy EoS
+                a: The scale factor to evaluate P(k) at
 
     Returns:
-        :pk_batch (torch.Tensor): Approximate linear power spectrum at corresponding k values [(Mpc/h)^3]
-        
+        :pk_batch (torch.Tensor): Approxmate linear power spectrum at corresponding k values [(Mpc/h)^3]
     """
 
     # Unpack theta into individual parameters
@@ -157,14 +204,28 @@ def get_eisensteinhu(k_batch, theta_batch):
     )
 
     return pk_batch
+
 def logF_fiducial(k_batch,theta_batch):
     '''
     Compute the emulated logarithm of the ratio between the true linear power spectrum 
-    and the Eisenstein & Hu 1998 fit for LCDM given in linear.py (Bartlett et al. 2023).
+    and the Eisenstein & Hu 1998 fit for LCDM modified from implementation in linear.py (Bartlett et al. 2023).
 
     Args:
-        :k_batch (torch.Tensor): k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
-        :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 9)
+        :k_batch (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
+        :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 9),
+            the 9 parameters are :
+                As: 10^9 times the amplitude of the primordial P(k)
+                Om: The z=0 total matter density parameter
+                Ob: The z=0 baryonic density parameter
+                h: Hubble constant, H0, divided by 100 km/s/Mpc
+                ns: Spectral tilt of primordial power spectrum
+                mnu: Sum of neutrino masses [eV / c^2]
+                w0: Time independent part of the dark energy EoS
+                wa: Time dependent part of the dark energy EoS
+                a: The scale factor to evaluate P(k) at
+
+    Returns:
+        :logF (torch.Tensor): The emulated logarithm of the ratio between the true linear power spectrum
     '''
     
     b = torch.tensor([0.05448654, 0.00379, 0.0396711937097927, 0.127733431568858, 1.35,
@@ -203,6 +264,7 @@ def logF_fiducial(k_batch,theta_batch):
     )
     
     logF = line1 + line2 + line3 + line4
+
     return logF
 
 def plin_plus_emulated(k, theta_batch):
@@ -211,8 +273,18 @@ def plin_plus_emulated(k, theta_batch):
     
     Args:
         :k (torch.Tensor): k values [h/Mpc] with shape (n_k)
-        :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 9)
-        
+        :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 9),
+            the 9 parameters are :
+                As: 10^9 times the amplitude of the primordial P(k)
+                Om: The z=0 total matter density parameter
+                Ob: The z=0 baryonic density parameter
+                h: Hubble constant, H0, divided by 100 km/s/Mpc
+                ns: Spectral tilt of primordial power spectrum
+                mnu: Sum of neutrino masses [eV / c^2]
+                w0: Time independent part of the dark energy EoS
+                wa: Time dependent part of the dark energy EoS
+                a: The scale factor to evaluate P(k) at
+
     Returns:
         :Pk (torch.Tensor): computed fiducial power spectrum for each k and theta in the batch
     '''
@@ -220,12 +292,12 @@ def plin_plus_emulated(k, theta_batch):
     # add dim to k so that it can be broadcasted with theta_batch
     k_batch = k.unsqueeze(1).to(device) 
 
-    eh = get_eisensteinhu(k_batch, theta_batch)
+    eh = get_eisensteinhu_nw(k_batch, theta_batch)
     D = get_approximate_D(k_batch, theta_batch)
     logF_value = logF_fiducial(k_batch, theta_batch)
 
     F_value= torch.exp(logF_value)
-    R_value = R(theta_batch)
+    R_value = growth_correction_R(theta_batch)
     log10_S_value = log10_S(k_batch, theta_batch)
     S_value = torch.pow(10,log10_S_value)
 

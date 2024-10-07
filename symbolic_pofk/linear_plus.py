@@ -1,10 +1,9 @@
-
 import numpy as np
 
-def Astosigma8(As, Om, Ob, h, ns, mnu, w0, wa):
-
+def As_to_sigma8(As, Om, Ob, h, ns, mnu, w0, wa):
     '''
     Compute the emulated conversion As -> sigma8 
+
     Args:
         :As (float): 10^9 times the amplitude of the primordial P(k)
         :Om (float): The z=0 total matter density parameter, Om
@@ -14,6 +13,10 @@ def Astosigma8(As, Om, Ob, h, ns, mnu, w0, wa):
         :mnu (float): Sum of neutrino masses [eV / c^2]
         :w0 (float): Time independent part of the dark energy EoS
         :wa (float): Time dependent part of the dark energy EoS
+
+    Returns:
+        :sigma8 (float): Root-mean-square density fluctuation when the linearly
+            evolved field is smoothed with a top-hat filter of radius 8 Mpc/h
     '''
 
 
@@ -36,9 +39,10 @@ def Astosigma8(As, Om, Ob, h, ns, mnu, w0, wa):
     
     return result*np.sqrt(As)
 
-def sigma8toAs(sigma8, Om, Ob, h, ns, mnu, w0, wa):
+def sigma8_to_As(sigma8, Om, Ob, h, ns, mnu, w0, wa):
     '''
     Compute the emulated conversion sigma8 -> As
+
     Args:
         :sigma8 (float): The z=0 rms mass fluctuation in spheres of radius 8 Mpc/h
         :Om (float): The z=0 total matter density parameter, Om
@@ -48,8 +52,10 @@ def sigma8toAs(sigma8, Om, Ob, h, ns, mnu, w0, wa):
         :mnu (float): Sum of neutrino masses [eV / c^2]
         :w0 (float): Time independent part of the dark energy EoS
         :wa (float): Time dependent part of the dark energy EoS
+    
+    Returns:
+        :As (float): 10^9 times the amplitude of the primordial P(k)
     '''
-
 
     c = [0.0187, 2.4891, 12.9495, 0.7527, 
          2.3685, 1.5062, 1.3057, 0.0885, 
@@ -70,22 +76,23 @@ def sigma8toAs(sigma8, Om, Ob, h, ns, mnu, w0, wa):
 
     return (sigma8/result)**2
 
-
-
-def R(As, Om, Ob, h, ns, mnu, w0, wa, a):
+def growth_correction_R(As, Om, Ob, h, ns, mnu, w0, wa, a):
     '''
     correction to the growth factor 
 
-    args:
-    - As (float): 10^9 times the amplitude of the primordial P(k)
-    - Om (float): The z=0 total matter density parameter, Om
-    - Ob (float): The z=0 baryonic density parameter, Omega_b
-    - h (float): Hubble constant, H0, divided by 100 km/s/Mpc
-    - ns (float): Spectral tilt of primordial power spectrum
-    - mnu (float): Sum of neutrino masses [eV / c^2]
-    - w0 (float): Time independent part of the dark energy EoS
-    - wa (float): Time dependent part of the dark energy EoS
-    - a (float): Scale factor to consider
+    Args:
+        :As (float): 10^9 times the amplitude of the primordial P(k)
+        :Om (float): The z=0 total matter density parameter, Om
+        :Ob (float): The z=0 baryonic density parameter, Ob
+        :h (float): Hubble constant, H0, divided by 100 km/s/Mpc
+        :ns (float): Spectral tilt of primordial power spectrum
+        :mnu (float): Sum of neutrino masses [eV / c^2]
+        :w0 (float): Time independent part of the dark energy EoS
+        :wa (float): Time dependent part of the dark energy EoS
+        :a (float): The scale factor to evaluate P(k) at
+
+    Returns:
+        :result (float): correction to the growth factor
     '''
 
     d = np.array([0.8545, 0.394 , 0.7294, 0.5347, 0.4662, 4.6669, 
@@ -108,16 +115,21 @@ def R(As, Om, Ob, h, ns, mnu, w0, wa, a):
 def log10_S(k, As, Om, Ob, h, ns, mnu, w0, wa):
     '''
     Corrections to the present-day linear power spectrum
-    args:
-    - k (np.ndarray): k values to evaluate P(k) at [h / Mpc]
-    - As (float): 10^9 times the amplitude of the primordial P(k)
-    - Om (float): The z=0 total matter density parameter, Om
-    - Ob (float): The z=0 baryonic density parameter, Omega_b
-    - h (float): Hubble constant, H0, divided by 100 km/s/Mpc
-    - ns (float): Spectral tilt of primordial power spectrum
-    - mnu (float): Sum of neutrino masses [eV / c^2]
-    - w0 (float): Time independent part of the dark energy EoS
-    - wa (float): Time dependent part of the dark energy EoS
+
+    Args:
+        :k (np.ndarray): k values to evaluate P(k) at [h / Mpc]
+        :As (float): 10^9 times the amplitude of the primordial P(k)
+        :Om (float): The z=0 total matter density parameter, Omega_m
+        :Ob (float): The z=0 baryonic density parameter, Omega_b
+        :h (float): Hubble constant, H0, divided by 100 km/s/Mpc
+        :ns (float): Spectral tilt of primordial power spectrum
+        :mnu (float): Sum of neutrino masses [eV / c^2]
+        :w0 (float): Time independent part of the dark energy EoS
+        :wa (float): Time dependent part of the dark energy EoS
+        :a (float): Scale factor to consider
+    
+    Returns:
+        :result (np.ndarray): Corrections to the present-day linear power spectrum
     '''
     
     e = np.array([0.2841, 0.1679, 0.0534, 0.0024, 0.1183, 0.3971, 
@@ -143,9 +155,7 @@ def log10_S(k, As, Om, Ob, h, ns, mnu, w0, wa):
     
     return result/10
 
-
-
-def get_approximate_D(k,As, Om, Ob, h,ns,mnu,w0,wa,a):
+def get_approximate_D(k, As, Om, Ob, h, ns, mnu, w0, wa, a):
     """
     Approximation to the growth factor using the results of
     Bond et al. 1980, Lahav et al. 1992, Carrol et al. 1992 
@@ -207,14 +217,12 @@ def get_approximate_D(k,As, Om, Ob, h,ns,mnu,w0,wa,a):
     yfs = 17.2 * fnu * (1 + 0.488 / fnu ** (7/6)) * (Nnu * q / fnu) ** 2
     Dcbnu = (fcb ** (0.7/pcb) + (D1 / (1 + yfs)) ** 0.7) ** (pcb / 0.7) * D1 ** (1 - pcb)
     
-    
     # Remove 1+zeq normalisation given in Eisenstein & Hu 1997
     D = Dcbnu / (1 + zeq)
     
     return D
 
-
-def get_eisensteinhu(k,As, Om, Ob, h,ns,mnu,w0,wa):
+def get_eisensteinhu_nw(k, As, Om, Ob, h, ns, mnu, w0, wa):
     """
     Compute the no-wiggles Eisenstein & Hu approximation
     to the linear P(k) at redshift zero.
@@ -229,7 +237,6 @@ def get_eisensteinhu(k,As, Om, Ob, h,ns,mnu,w0,wa):
 
     Returns:
         :pk (np.ndarray): Approxmate linear power spectrum at corresponding k values [(Mpc/h)^3]
-        
     """
     
     ombom0 = Ob / Om
@@ -259,10 +266,25 @@ def get_eisensteinhu(k,As, Om, Ob, h,ns,mnu,w0,wa):
     
     return  pk
 
-def logF_fiducial(k,As, Om, Ob, h,ns,mnu,w0,wa):
+def logF_fiducial(k, As, Om, Ob, h, ns, mnu, w0, wa):
     '''
     Compute the emulated logarithm of the ratio between the true linear power spectrum 
-    and the Eisenstein & Hu 1998 fit for LCDM given in linear.py (Bartlett et al. 2023).
+    and the Eisenstein & Hu 1998 fit for LCDM modified from implementation in linear.py (Bartlett et al. 2023).
+
+    Args:
+        :k (np.ndarray): k values to evaluate P(k) at [h / Mpc]
+        :As (float): 10^9 times the amplitude of the primordial P(k)
+        :Om (float): The z=0 total matter density parameter, Omega_m
+        :Ob (float): The z=0 baryonic density parameter, Omega_b
+        :h (float): Hubble constant, H0, divided by 100 km/s/Mpc
+        :ns (float): Spectral tilt of primordial power spectrum
+        :mnu (float): Sum of neutrino masses [eV / c^2]
+        :w0 (float): Time independent part of the dark energy EoS
+        :wa (float): Time dependent part of the dark energy EoS
+        :a (float): Scale factor to consider
+
+    Returns:
+        :logF (np.ndarray): The emulated logarithm of the ratio between the true linear power spectrum
     '''
     
     b = [0.05448654, 0.00379, 0.0396711937097927, 0.127733431568858, 1.35,
@@ -321,17 +343,16 @@ def plin_plus_emulated(k, As, Om, Ob, h, ns, mnu, w0, wa, a=1):
     Returns:
         :pk_lin (np.ndarray): The emulated linear P(k) [(Mpc/h)^3]
     """
-    
 
-    eh = get_eisensteinhu(k, As, Om, Ob, h, ns, mnu, w0, wa)
-    D = get_approximate_D(k, As, Om, Ob, h, ns, mnu, w0, wa, a)
+    eh = get_eisensteinhu_nw(k, As, Om, Ob, h, ns, mnu, w0, wa)
+    D_value = get_approximate_D(k, As, Om, Ob, h, ns, mnu, w0, wa, a)
     logF_value = logF_fiducial(k, As, Om, Ob, h, ns, mnu, w0, wa)
 
     F_value= np.exp(logF_value)
-    R_value = R(As, Om, Ob, h, ns, mnu, w0, wa, a)
+    R_value = growth_correction_R(As, Om, Ob, h, ns, mnu, w0, wa, a)
     log10_S_value = log10_S(k, As, Om, Ob, h, ns, mnu, w0, wa)
     S_value = np.power(10,log10_S_value)
 
-    Pk = eh * D ** 2 * F_value * R_value * S_value
+    pk_lin = eh * D_value ** 2 * F_value * R_value * S_value
 
-    return Pk
+    return pk_lin
