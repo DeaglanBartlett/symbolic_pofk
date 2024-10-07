@@ -6,6 +6,9 @@ import unittest
 import symbolic_pofk.linear as linear
 import symbolic_pofk.syrenhalofit as syrenhalofit
 
+import symbolic_pofk.linear_plus as linear_plus
+import symbolic_pofk.syren_plus as syren_plus
+
 def test_lcdm():
 
     # Define k range
@@ -147,4 +150,94 @@ def test_lcdm():
         
     return
 
+
+def test_syren_plus():
+
+    # Define k range
+    kmin = 9e-3
+    kmax = 9
+    nk = 400
+    k = np.logspace(np.log10(kmin), np.log10(kmax), nk)
+
+    # Cosmological parameters
+    As = 2.105  # 10^9 A_s
+    h = 0.6766
+    Om = 0.3111
+    Ob = 0.02242 / h ** 2
+    ns = 0.9665
+    tau = 0.0561
+    mnu = 0.10
+    w0 = -0.9
+    wa = 0.1
+    
+    # Redshift
+    z = 1
+    a = 1 / (1+z)
+    
+    # Get sigma8 for this As
+    sigma8 = linear_plus.As_to_sigma8(As, Om, Ob, h, ns, mnu, w0, wa)
+
+    # See what As you get in reverse
+    As_new = linear_plus.sigma8_to_As(sigma8, Om, Ob, h, ns, mnu, w0, wa)
+    assert math.isclose(As, As_new, rel_tol=1e-2)
+
+    # Compute P(k) using camb
+    num_massive_neutrinos = (3
+                        if mnu != 0.0
+                         else 0)
+    Oc =  Om - Ob - mnu / 93.14 / h ** 2
+    redshift = 1 / a - 1
+    pars = camb.CAMBparams()
+    pars.set_cosmology(
+            H0=100 * h,
+            ombh2=(Ob * h ** 2),
+            omch2=(Oc * h**2),
+            omk=0,
+            neutrino_hierarchy='degenerate',
+            num_massive_neutrinos=num_massive_neutrinos,
+            mnu=mnu,
+            standard_neutrino_neff=3.046,
+            tau = tau
+    )
+    pars.set_dark_energy(w=w0, wa=wa)
+    pars.InitPower.set_params(ns=ns, As=As*1e-9, r=0)
+    pars.set_matter_power(redshifts=[redshift], kmax=k[-1], 
+            accurate_massive_neutrino_transfers=True)
+    pars.NonLinear = camb.model.NonLinear_none
+    results = camb.get_results(pars)
+    index = 6
+    _, _, plin_camb = results.get_matter_power_spectrum(
+        var1=(1 + index),
+        var2=(1 + index),
+        minkh=k.min(), 
+        maxkh=k.max(), 
+        npoints=len(k)
+    )
+    plin_camb = plin_camb[0]
+
+    # Get emulated power spectrum
+    plin_syren_plus = linear_plus.plin_plus_emulated(k, As, Om, Ob, h, ns, mnu, w0, wa, a=a)
+
+    # Check that the linear emulator is close to camb
+    assert np.allclose(np.log(plin_camb), np.log(plin_syren_plus), atol=1e-2)
+
+    # Get camb halofit
+    pars.NonLinear = camb.model.NonLinear_both
+    pars.NonLinearModel.set_params(halofit_version='takahashi')
+    results = camb.get_results(pars)
+    nk = len(k)
+    kh, z, pk_camb_halofit = results.get_matter_power_spectrum(
+        minkh=k[0], maxkh=k[-1], npoints=nk)
+    pk_camb_halofit = pk_camb_halofit[0]
+
+    # Get syren halofit
+    pk_syren_plus = syren_plus.pnl_plus_emulated(k, As, Om, Ob, h, ns, mnu, w0, wa, a)
+
+    # Check that the emulator is close to camb
+    assert np.allclose(np.log(pk_camb_halofit), np.log(pk_syren_plus), atol=1e-1)
+
+    # Check that the result at minimum k is close to linear
+    assert np.allclose(np.log(plin_syren_plus[0]), np.log(pk_syren_plus[0]), atol=1e-2)
+
+    return
 
