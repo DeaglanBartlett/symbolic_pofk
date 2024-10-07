@@ -294,7 +294,7 @@ def test_torch_syren_plus():
     # Get torch versions
     theta = torch.tensor([As, Om, Ob, h, ns, mnu, w0, wa, a],
                          requires_grad=True).reshape(1, -1)
-    k = torch.tensor(k, requires_grad=True).reshape(-1, 1)
+    k = torch.tensor(k, requires_grad=True)
     plin_torch = torch_linear_plus.plin_plus_emulated(k, theta)
     pnl_torch = torch_syren_plus.pnl_plus_emulated(k, theta)
 
