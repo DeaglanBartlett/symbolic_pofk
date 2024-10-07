@@ -1,4 +1,5 @@
 import numpy as np
+from .linear import logF_fiducial as lcdm_logF_fiducial
 
 def As_to_sigma8(As, Om, Ob, h, ns, mnu, w0, wa):
     """
@@ -269,7 +270,10 @@ def get_eisensteinhu_nw(k, As, Om, Ob, h, ns, mnu, w0, wa):
 def logF_fiducial(k, As, Om, Ob, h, ns, mnu, w0, wa):
     """
     Compute the emulated logarithm of the ratio between the true linear power spectrum 
-    and the Eisenstein & Hu 1998 fit for LCDM modified from implementation in linear.py (Bartlett et al. 2023).
+    and the Eisenstein & Hu 1998 fit for LCDM as given in Bartlett et al. 2023.
+
+    This calls the logF_fiducial function from symbolic_pofk.linear but extrapolates
+    to all k considered
 
     Args:
         :k (np.ndarray): k values to evaluate P(k) at [h / Mpc]
@@ -286,41 +290,10 @@ def logF_fiducial(k, As, Om, Ob, h, ns, mnu, w0, wa):
     Returns:
         :logF (np.ndarray): The emulated logarithm of the ratio between the true linear power spectrum
     """
-    
-    b = [0.05448654, 0.00379, 0.0396711937097927, 0.127733431568858, 1.35,
-        4.053543862744234, 0.0008084539054750851, 1.8852431049189666,
-        0.11418372931475675, 3.798, 14.909, 5.56, 15.8274343004709, 0.0230755621512691,
-        0.86531976, 0.8425442636372944, 4.553956000000005, 5.116999999999995,
-        70.0234239999998, 0.01107, 5.35, 6.421, 134.309, 5.324, 21.532,
-        4.741999999999985, 16.68722499999999, 3.078, 16.987, 0.05881491,
-        0.0006864690561825617, 195.498, 0.0038454457516892, 0.276696018851544,
-        7.385, 12.3960625361899, 0.0134114370723638]
-        
-    line1 = b[0] * h - b[1]
-    
-    line2 = (
-        ((Ob * b[2]) / np.sqrt(h ** 2 + b[3])) ** (b[4] * Om) *
-        (
-            (b[5] * k - Ob) / np.sqrt(b[6] + (Ob - b[7] * k) ** 2)
-            * b[8] * (b[9] * k) ** (-b[10] * k) * np.cos(Om * b[11]
-            - (b[12] * k) / np.sqrt(b[13] + Ob ** 2))
-            - b[14] * ((b[15] * k) / np.sqrt(1 + b[16] * k ** 2) - Om)
-            * np.cos(b[17] * h / np.sqrt(1 + b[18] * k ** 2))
-        )
-    )
-    
-    line3 = (
-        b[19] *  (b[20] * Om + b[21] * h - np.log(b[22] * k)
-        + (b[23] * k) ** (- b[24] * k)) * np.cos(b[25] / np.sqrt(1 + b[26] * k ** 2))
-    )
-    
-    line4 = (
-        (b[27] * k) ** (-b[28] * k) * (b[29] * k - (b[30] * np.log(b[31] * k))
-        / np.sqrt(b[32] + (Om - b[33] * h) ** 2))
-        * np.cos(Om * b[34] - (b[35] * k) / np.sqrt(Ob ** 2 + b[36]))
-    )
-    
-    logF = line1 + line2 + line3 + line4
+
+    sigma8 = None  # not needed in logF_fiducial
+    logF = lcdm_logF_fiducial(k, sigma8, Om, Ob, h, ns, extrapolate=True)
+
     return logF
 
 def plin_plus_emulated(k, As, Om, Ob, h, ns, mnu, w0, wa, a=1):
