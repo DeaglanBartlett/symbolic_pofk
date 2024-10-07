@@ -2,12 +2,16 @@ import numpy as np
 import math
 import camb
 import unittest
+import torch
 
 import symbolic_pofk.linear as linear
 import symbolic_pofk.syrenhalofit as syrenhalofit
 
 import symbolic_pofk.linear_plus as linear_plus
 import symbolic_pofk.syren_plus as syren_plus
+
+import symbolic_pofk.pytorch.linear_plus as torch_linear_plus
+import symbolic_pofk.pytorch.syren_plus as torch_syren_plus
 
 def test_lcdm():
 
@@ -241,3 +245,42 @@ def test_syren_plus():
 
     return
 
+
+def test_torch_syren_plus():
+
+    # Define k range
+    kmin = 9e-3
+    kmax = 9
+    nk = 400
+    k = np.logspace(np.log10(kmin), np.log10(kmax), nk)
+
+    # Cosmological parameters
+    As = 2.105  # 10^9 A_s
+    h = 0.6766
+    Om = 0.3111
+    Ob = 0.02242 / h ** 2
+    ns = 0.9665
+    tau = 0.0561
+    mnu = 0.10
+    w0 = -0.9
+    wa = 0.1
+
+    # Redshift
+    z = 1
+    a = 1 / (1+z)
+
+    # Get numpy versions
+    plin_numpy = linear_plus.plin_plus_emulated(k, As, Om, Ob, h, ns, mnu, w0, wa, a=a)
+    pnl_numpy = syren_plus.pnl_plus_emulated(k, As, Om, Ob, h, ns, mnu, w0, wa, a)
+
+    # Get torch versions
+    theta = torch.tensor([As, Om, Ob, h, ns, mnu, w0, wa, a], requires_grad=True).reshape(1, -1)
+    k = torch.tensor(k, requires_grad=True).reshape(-1, 1)
+    plin_torch = torch_linear_plus.plin_plus_emulated(k, theta)
+    pnl_torch = torch_syren_plus.pnl_plus_emulated(k, theta)
+
+    # Check that the results are close
+    assert np.allclose(np.log(plin_numpy), np.log(plin_torch.detach().numpy()), atol=1e-5)
+    assert np.allclose(np.log(pnl_numpy), np.log(pnl_torch.detach().numpy()), atol=1e-5)
+
+    return
