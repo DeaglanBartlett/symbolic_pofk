@@ -260,7 +260,6 @@ def test_torch_syren_plus():
     Om = 0.3111
     Ob = 0.02242 / h ** 2
     ns = 0.9665
-    tau = 0.0561
     mnu = 0.10
     w0 = -0.9
     wa = 0.1
