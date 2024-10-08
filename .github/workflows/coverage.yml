@@ -2,7 +2,7 @@ name: Unit Tests
 
 on:
   push:
-    branches: [ "main", "7-add-unit-tests" ]
+    branches: [ "main", "18-coverage-report-not-generated-properly" ]
   pull_request:
     branches: [ "main" ]
 
