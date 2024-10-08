@@ -4,23 +4,17 @@ def tupleset(t, i, value):
     """
     Modify a specific index in a tuple and return a new tuple.
 
-    Parameters
-    ----------
-    t : tuple
-        The input tuple.
-    i : int
-        The index to modify.
-    value : any
-        The new value to insert at index `i`.
+    Args:
+        :t (tuple): The input tuple.
+        :i (int): The index to modify.
+        :value (any): The new value to insert at index `i`.
 
-    Returns
-    -------
-    tuple
-        A new tuple with the specified index modified.
+    Returns:
+        :ell (tuple): A new tuple with the specified index modified.
     """
-    l = list(t)
-    l[i] = value
-    return tuple(l)
+    ell = list(t)
+    ell[i] = value
+    return tuple(ell)
 
 
 def _basic_simpson(y, start, stop, x, dx, axis):

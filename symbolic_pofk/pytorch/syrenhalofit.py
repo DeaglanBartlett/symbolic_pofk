@@ -164,7 +164,7 @@ def A_emulated(k, theta_batch, ksigma=None, neff=None, C=None):
     return A
 
 
-def run_halofit(k, theta_batch, emulator='fiducial', which_params='Bartlett', add_correction=True):
+def run_halofit(k, theta_batch, emulator='fiducial', extrapolate=True, which_params='Bartlett', add_correction=True,):
     """
     Compute the non-linear power spectrum using halofit and a symbolic approximation
     to the linear power spectrum. The model sr-halofit of Bartlett et al. 2024 is
@@ -184,6 +184,9 @@ def run_halofit(k, theta_batch, emulator='fiducial', which_params='Bartlett', ad
         :emulator (str, default='fiducial'): Which linear P(k)emulator to use from
             Bartlett et al. 2023. 'fiducial' uses the fiducial one, and 'max_precision'
             uses the most precise one.
+        :extrapolate (bool, default=False): If using the Bartlett et al. 2023 linear
+            fit, then if true we extrapolate outside range tested in paper. Otherwise,
+            we use the E&H with baryons fit for this regime
         :which_params (str, default='Bartlett'): Which halofit parameters to use.
             Currently available: 'Takahashi' uses those from Takahashi et al. 2012, or
             'Bartlett' uses those from Bartlett et al. 2024.
@@ -214,7 +217,7 @@ def run_halofit(k, theta_batch, emulator='fiducial', which_params='Bartlett', ad
     y = k / ksigma
     
     # Get linear P(k)
-    plin = plin_emulated(k, theta_batch, emulator=emulator)
+    plin = plin_emulated(k, theta_batch, emulator=emulator, extrapolate=extrapolate)
 
     sigma8, Om, Ob, h, ns, a = theta_batch.unbind(dim=1)
 

@@ -152,7 +152,7 @@ def pk_EisensteinHu_zb(k, theta_batch, integral_norm=True):
     return pk_eh
 
 
-def logF_fiducial(k_batch, theta_batch):
+def logF_fiducial(k_batch, theta_batch, extrapolate=False, kmin=9.e-3, kmax=9):
     """
     Compute the emulated logarithm of the ratio between the true linear power spectrum 
     and the Eisenstein & Hu 1998 fit for LCDM as given in Bartlett et al. 2023.
@@ -167,6 +167,13 @@ def logF_fiducial(k_batch, theta_batch):
                 Ob: The z=0 baryonic density parameter
                 h: Hubble constant, H0, divided by 100 km/s/Mpc
                 ns: Spectral tilt of primordial power spectrum
+        :extrapolate (bool, default=False): If True, then extrapolates the Bartlett
+            et al. 2023 fit outside range tested in paper. Otherwise, uses E&H with
+            baryons for k < kmin and k > kmax
+        :kmin (float, default=9.e-3): Minimum k value to use Bartlett et al. formula
+            if extrapolate=False
+        :kmax (float, default=9): Maximum k value to use Bartlett et al. formula
+            if extrapolate=False
 
     Returns:
         :logF (torch.Tensor): The emulated logarithm of the ratio between the true linear power spectrum and the
@@ -211,10 +218,19 @@ def logF_fiducial(k_batch, theta_batch):
 
     logF = line1 + line2 + line3 + line4
 
+    # Use Bartlett et al. 2023 P(k) only in tested regime
+    m = ~((k_batch >= kmin) & (k_batch <= kmax))
+    if (not extrapolate) and m.sum() > 0:
+        warnings.warn("Not using Bartlett et al. formula outside tested regime")
+        logF[m] = torch.log(
+            pk_EisensteinHu_zb(k_batch[m], theta_batch, integral_norm=False) /
+            pk_EisensteinHu_zb(k_batch[m], theta_batch, integral_norm=True)
+        )
+
     return logF
 
 
-def logF_max_precision(k, theta_batch):
+def logF_max_precision(k, theta_batch, extrapolate=False, kmin=9.e-3, kmax=9):
     """
     Compute the emulated logarithm of the ratio between the true linear
     power spectrum and the Eisenstein & Hu 1998 fit. Here we use the mosy precide
@@ -230,6 +246,13 @@ def logF_max_precision(k, theta_batch):
                 Ob: The z=0 baryonic density parameter
                 h: Hubble constant, H0, divided by 100 km/s/Mpc
                 ns: Spectral tilt of primordial power spectrum
+        :extrapolate (bool, default=False): If True, then extrapolates the Bartlett
+            et al. 2023 fit outside range tested in paper. Otherwise, uses E&H with
+            baryons for k < kmin and k > kmax
+        :kmin (float, default=9.e-3): Minimum k value to use Bartlett et al. formula
+            if extrapolate=False
+        :kmax (float, default=9): Maximum k value to use Bartlett et al. formula
+            if extrapolate=False
         
     Returns:
         :logF (torch.Tensor): The logarithm of the ratio between the linear P(k) and the
@@ -273,11 +296,20 @@ def logF_max_precision(k, theta_batch):
             /torch.sqrt(k**2 + c[72]))**2/(k**2 + c[73]) + 1))
         )
     logF /= 100
+    
+    # Use Bartlett et al. 2023 P(k) only in tested regime
+    m = ~((k >= kmin) & (k<= kmax))
+    if (not extrapolate) and m.sum() > 0:
+        warnings.warn("Not using Bartlett et al. formula outside tested regime")
+        logF[m] = torch.log(
+            pk_EisensteinHu_zb(k[m], theta_batch, integral_norm=False) /
+            pk_EisensteinHu_zb(k[m], theta_batch, integral_norm=True)
+        )
 
     return logF
 
 
-def plin_emulated(k, theta_batch, emulator='fiducial'):
+def plin_emulated(k, theta_batch, emulator='fiducial', extrapolate=False, kmin=9.e-3, kmax=9):
     """
     Compute the emulated linear matter power spectrum using the fits of
     Eisenstein & Hu 1998 and Bartlett et al. 2023.
@@ -296,6 +328,13 @@ def plin_emulated(k, theta_batch, emulator='fiducial'):
         :emulator (str, default='fiducial'): Which emulator to use from Bartlett et al.
             2023. 'fiducial' uses the fiducial one, and 'max_precision' uses the
             most precise one.
+        :extrapolate (bool, default=False): If True, then extrapolates the Bartlett
+            et al. 2023 fit outside range tested in paper. Otherwise, uses E&H with
+            baryons for k < kmin and k > kmax
+        :kmin (float, default=9.e-3): Minimum k value to use Bartlett et al. formula
+            if extrapolate=False
+        :kmax (float, default=9): Maximum k value to use Bartlett et al. formula
+            if extrapolate=False
         
     Returns:
         :pk_lin (torch.Tensor): The emulated linear P(k) [(Mpc/h)^3]
@@ -303,9 +342,9 @@ def plin_emulated(k, theta_batch, emulator='fiducial'):
     
     p_eh = pk_EisensteinHu_zb(k, theta_batch[:,:5], integral_norm=True)
     if emulator == 'fiducial':
-        logF = logF_fiducial(k, theta_batch[:,:5])
+        logF = logF_fiducial(k, theta_batch[:,:5], extrapolate=extrapolate, kmin=kmin, kmax=kmax)
     elif emulator == 'max_precision':
-        logF = logF_max_precision(k, theta_batch[:,:5])
+        logF = logF_max_precision(k, theta_batch[:,:5], extrapolate=extrapolate, kmin=kmin, kmax=kmax)
     else:
         raise NotImplementedError
     p_lin = p_eh * torch.exp(logF)
