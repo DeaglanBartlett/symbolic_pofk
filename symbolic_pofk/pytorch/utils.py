@@ -1,5 +1,6 @@
 import torch
 
+
 def tupleset(t, i, value):
     """
     Modify a specific index in a tuple and return a new tuple.
@@ -21,7 +22,7 @@ def _basic_simpson(y, start, stop, x, dx, axis):
     """
     Core implementation of Simpson's rule along a given axis.
     If x is None, assumes equally spaced data with spacing dx.
-    
+
     Parameters
     ----------
     Args:
@@ -31,7 +32,7 @@ def _basic_simpson(y, start, stop, x, dx, axis):
         :x (torch.Tensor, optional): Points at which y is sampled.
         :dx (float): Spacing between points if x is not provided.
         :axis (int): Axis along which to integrate.
-    
+
     Returns:
         :result (torch.Tensor): Estimated integral using Simpson's rule.
     """
@@ -68,6 +69,7 @@ def _basic_simpson(y, start, stop, x, dx, axis):
         result = torch.sum(tmp, dim=axis)
 
     return result
+
 
 def simpson(y, *, x=None, dx=1.0, axis=-1):
     """
@@ -108,10 +110,12 @@ def simpson(y, *, x=None, dx=1.0, axis=-1):
             returnshape = 1
             x = x.view(tuple(shapex))
         elif len(x.shape) != len(y.shape):
-            raise ValueError("If given, x must be 1-D or have the same shape as y.")
+            raise ValueError(
+                "If given, x must be 1-D or have the same shape as y.")
 
         if x.shape[axis] != N:
-            raise ValueError("If given, x must have the same length as y along the specified axis.")
+            raise ValueError(
+                "If given, x must have the same length as y along the specified axis.")
 
     if N % 2 == 0:
         val = 0.0
@@ -141,11 +145,11 @@ def simpson(y, *, x=None, dx=1.0, axis=-1):
                 hm1 = tupleset(slice_all, axis, slice(-1, None, 1))
 
                 diffs = torch.diff(x, dim=axis).to(torch.float64)
-                h = [diffs[hm2].squeeze(dim=axis), 
-                    diffs[hm1].squeeze(dim=axis)]
+                h = [diffs[hm2].squeeze(dim=axis),
+                     diffs[hm1].squeeze(dim=axis)]
             else:
                 h = torch.tensor([dx, dx], dtype=torch.float64)
-                
+
             # Correction for the last interval according to Cartwright
             num = 2 * h[1] ** 2 + 3 * h[0] * h[1]
             den = 6 * (h[1] + h[0])
@@ -187,7 +191,8 @@ def hypergeometric_series(a, b, c, z, max_iter=10000, tolerance=1.0e-6):
     """
 
     if torch.any(torch.abs(z) >= 1.0):
-        raise ValueError("This implementation may not be accurate for |z| >= 1.")
+        raise ValueError(
+            "This implementation may not be accurate for |z| >= 1.")
 
     # Initialize variables
     F = torch.ones_like(z)
@@ -200,12 +205,12 @@ def hypergeometric_series(a, b, c, z, max_iter=10000, tolerance=1.0e-6):
         # Update term and F
         term = term * ap * bp * z / (cp * i)
         F = F + term
-        
+
         # Update parameters
         ap += 1.0
         bp += 1.0
         cp += 1.0
-        
+
         # Check convergence
         if torch.all(torch.abs(term) < torch.abs(F) * tolerance):
             break
@@ -239,8 +244,9 @@ def hyp2f1(a, b, c, z):
     m = z < -1.0
     if torch.any(m):
         new_z = z[m] / (z[m] - 1.0)
-        result[m] = (1.0 - z[m]) ** (-a) *  hypergeometric_series(a, c - b, c, new_z)
-        
+        result[m] = (1.0 - z[m]) ** (-a) * \
+            hypergeometric_series(a, c - b, c, new_z)
+
     # Handle cases where z >= 1
     if torch.any(z >= 1.0):
         result[z >= 1.0] = torch.tensor(float("inf"))
