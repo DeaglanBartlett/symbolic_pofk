@@ -2,7 +2,7 @@
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this
 # software and associated documentation files (the "Software"), to deal in the Software
-# without restriction, including without limitation the rights to use, copy, modify,
+#  without restriction, including without limitation the rights to use, copy, modify,
 # merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
 # permit persons to whom the Software is furnished to do so, subject to the following
 # conditions:
@@ -43,12 +43,12 @@ print('sigma8 = ', sigma8)
 
 # Emulate P(k)
 pk_halofit = syrenhalofit.run_halofit(k, sigma8, Om, Ob, h, ns, a, emulator='fiducial',
-    extrapolate=True, which_params='Bartlett', add_correction=False)
+                                      extrapolate=True, which_params='Bartlett', add_correction=False)
 pk_syrenhalofit = syrenhalofit.run_halofit(k, sigma8, Om, Ob, h, ns, a,
-    emulator='fiducial', extrapolate=True, which_params='Bartlett', add_correction=True)
+                                           emulator='fiducial', extrapolate=True, which_params='Bartlett', add_correction=True)
 pk_lin = linear.plin_emulated(k, sigma8, Om, Ob, h, ns, a=a, emulator='fiducial',
-    extrapolate=True)
-    
+                              extrapolate=True)
+
 # Run CAMB versions
 pars = camb.CAMBparams()
 pars.set_cosmology(H0=h*100,
@@ -66,14 +66,16 @@ pars.NonLinear = camb.model.NonLinear_both
 pars.NonLinearModel.set_params(halofit_version='takahashi')
 results = camb.get_results(pars)
 nk = len(k)
-kh, z, pk_camb_halofit = results.get_matter_power_spectrum(minkh=k[0], maxkh=k[-1], npoints=nk)
+kh, z, pk_camb_halofit = results.get_matter_power_spectrum(
+    minkh=k[0], maxkh=k[-1], npoints=nk)
 pk_camb_halofit = pk_camb_halofit[0]
 
 pars.NonLinear = camb.model.NonLinear_both
 pars.NonLinearModel.set_params(halofit_version='mead2020')
 results = camb.get_results(pars)
 nk = len(k)
-kh, z, pk_camb_hmcode = results.get_matter_power_spectrum(minkh=k[0], maxkh=k[-1], npoints=nk)
+kh, z, pk_camb_hmcode = results.get_matter_power_spectrum(
+    minkh=k[0], maxkh=k[-1], npoints=nk)
 pk_camb_hmcode = pk_camb_hmcode[0]
 
 # Euclid emulator
@@ -81,14 +83,14 @@ try:
     import euclidemu2
     ee2 = euclidemu2.PyEuclidEmulator()
     euclid_cosmo_par = {
-        'As':As,
-        'Omm':Om,
-        'Omb':Ob,
-        'h':h,
-        'ns':ns,
-        'mnu':mnu,
-        'w0':-1.,
-        'wa':0.0
+        'As': As,
+        'Omm': Om,
+        'Omb': Ob,
+        'h': h,
+        'ns': ns,
+        'mnu': mnu,
+        'w0': -1.,
+        'wa': 0.0
     }
     redshift = 1 / a - 1
     kh, pk_euclid, _, _ = ee2.get_pnonlin(euclid_cosmo_par, [redshift], k)
@@ -96,13 +98,13 @@ try:
 except ImportError:
     print('Euclid Emulator not available')
     pk_euclid = None
-    
+
 # BACCO emulator
 try:
     import sys
     import os
     import contextmanager
-    
+
     @contextmanager
     def suppress_stdout_stderr():
         stdout = sys.stdout
@@ -120,26 +122,26 @@ try:
     with suppress_stdout_stderr():
         import baccoemu
         bacco_emulator = baccoemu.Matter_powerspectrum()
-        
+
     params = {
-        'omega_cold'    :  Om,
-        'sigma8_cold'   :  sigma8, # if A_s is not specified
-        'omega_baryon'  :  Ob,
-        'ns'            :  ns,
-        'hubble'        :  h,
-        'neutrino_mass' :  mnu,
-        'w0'            : -1.0,
-        'wa'            :  0.0,
-        'expfactor'     :  a
+        'omega_cold':  Om,
+        'sigma8_cold':  sigma8,  # if A_s is not specified
+        'omega_baryon':  Ob,
+        'ns':  ns,
+        'hubble':  h,
+        'neutrino_mass':  mnu,
+        'w0': -1.0,
+        'wa':  0.0,
+        'expfactor':  a
     }
-    
+
     _, pk_bacco = bacco_emulator.get_nonlinear_pk(k=k, cold=True, **params)
-    
+
 except ImportError:
     print('BACCO Emulator not available')
     pk_bacco = None
-    
-    
+
+
 # Plot all the emulators
 fig, ax = plt.subplots(1, 1, figsize=(7, 4))
 lw = 2
@@ -147,19 +149,19 @@ cmap = plt.get_cmap('Set1')
 
 ax.loglog(k, pk_lin, color='k', ls='-.', label='Linear')
 ax.loglog(k, pk_camb_halofit, color=cmap(1), ls=':',
-    label=r'\textsc{halofit} (Takahashi+ 2012; \textsc{camb})', lw=lw)
+          label=r'\textsc{halofit} (Takahashi+ 2012; \textsc{camb})', lw=lw)
 ax.loglog(k, pk_camb_hmcode, color=cmap(4), ls=':',
-    label=r'\textsc{hmcode} (Mead+ 2021; \textsc{camb})', lw=lw)
+          label=r'\textsc{hmcode} (Mead+ 2021; \textsc{camb})', lw=lw)
 ax.loglog(k, pk_halofit, color=cmap(2), ls='--',
-    label=r'\textsc{halofit+} (Bartlett et al. 2024)', lw=lw)
+          label=r'\textsc{halofit+} (Bartlett et al. 2024)', lw=lw)
 ax.loglog(k, pk_syrenhalofit, color=cmap(3), ls='--',
-    label=r'\textsc{syren-halofit} (Bartlett et al. 2024)', lw=lw)
+          label=r'\textsc{syren-halofit} (Bartlett et al. 2024)', lw=lw)
 if pk_euclid is not None:
-    ax.loglog(k, pk_euclid, color=cmap(0), ls ='-',
-        label=r'\textsc{euclidemulator2}', lw=lw)
+    ax.loglog(k, pk_euclid, color=cmap(0), ls='-',
+              label=r'\textsc{euclidemulator2}', lw=lw)
 if pk_bacco is not None:
-    ax.loglog(k, pk_bacco, color=cmap(6), ls ='-',
-        label=r'\textsc{bacco} Emulator', lw=lw)
+    ax.loglog(k, pk_bacco, color=cmap(6), ls='-',
+              label=r'\textsc{bacco} Emulator', lw=lw)
 ax.set_ylabel(r'$P(k) \ / \ (h^{-1} {\rm \, Mpc})^3 $')
 ax.set_xlabel(r'$k \ / \ h {\rm \, Mpc^{-1}}$')
 ax.legend(framealpha=0.0, fontsize=12)

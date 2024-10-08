@@ -2,7 +2,7 @@
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this
 # software and associated documentation files (the "Software"), to deal in the Software
-# without restriction, including without limitation the rights to use, copy, modify,
+#  without restriction, including without limitation the rights to use, copy, modify,
 # merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
 # permit persons to whom the Software is furnished to do so, subject to the following
 # conditions:
@@ -63,25 +63,29 @@ EH_f90 = f90_syrenhalofit.emulators.eisenstein_hu_pk(k, sigma8, Om, Ob, h, ns)
 EH_py3 = linear.pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns)
 
 # Compare logF corrections
-F_f90 = np.exp(f90_syrenhalofit.emulators.logf_fiducial(k, sigma8, Om, Ob, h, ns))
-F_py3 = np.exp(linear.logF_fiducial(k, sigma8, Om, Ob, h, ns, extrapolate=True))
+F_f90 = np.exp(f90_syrenhalofit.emulators.logf_fiducial(
+    k, sigma8, Om, Ob, h, ns))
+F_py3 = np.exp(linear.logF_fiducial(
+    k, sigma8, Om, Ob, h, ns, extrapolate=True))
 
-# Compare linear P(k)
-pk_lin_f90 = f90_syrenhalofit.emulators.linear_pk_emulated(k, sigma8, Om, Ob, h, ns, a)
+#  Compare linear P(k)
+pk_lin_f90 = f90_syrenhalofit.emulators.linear_pk_emulated(
+    k, sigma8, Om, Ob, h, ns, a)
 pk_lin_py3 = linear.plin_emulated(k, sigma8, Om, Ob, h, ns, a=a, emulator='fiducial',
-    extrapolate=True)
-    
+                                  extrapolate=True)
+
 # Compare 1+A correction
-ksigma_f90 = f90_syrenhalofit.emulators.ksigma_emulated(sigma8, Om, Ob, h, ns, a)
+ksigma_f90 = f90_syrenhalofit.emulators.ksigma_emulated(
+    sigma8, Om, Ob, h, ns, a)
 neff_f90 = f90_syrenhalofit.emulators.neff_emulated(sigma8, Om, Ob, h, ns, a)
 C_f90 = f90_syrenhalofit.emulators.c_emulated(sigma8, Om, Ob, h, ns, a)
 A_f90 = f90_syrenhalofit.emulators.a_emulated(k, sigma8, Om, Ob, h, ns, a,
-        ksigma_f90, neff_f90, C_f90)
+                                              ksigma_f90, neff_f90, C_f90)
 ksigma_py3 = syrenhalofit.ksigma_emulated(sigma8, Om, Ob, h, ns, a)
 neff_py3 = syrenhalofit.neff_emulated(sigma8, Om, Ob, h, ns, a)
 C_py3 = syrenhalofit.C_emulated(sigma8, Om, Ob, h, ns, a)
 A_py3 = syrenhalofit.A_emulated(k, sigma8, Om, Ob, h, ns, a,
-    ksigma=ksigma_py3, neff=neff_py3, C=C_py3)
+                                ksigma=ksigma_py3, neff=neff_py3, C=C_py3)
 print('\nf90 ksigma = ', ksigma_f90)
 print('py3 ksigma = ', ksigma_py3)
 print('\nf90 neff = ', neff_f90)
@@ -91,10 +95,10 @@ print('py3 C = ', C_py3)
 
 # Compare non-linear P(k)
 pk_f90 = f90_syrenhalofit.emulators.run_halofit(k, sigma8, Om, Ob, h, ns, a,
-        'Bartlett', True)
+                                                'Bartlett', True)
 pk_py3 = syrenhalofit.run_halofit(k, sigma8, Om, Ob, h, ns, a, emulator='fiducial',
-    extrapolate=True, which_params='Bartlett', add_correction=True)
-    
+                                  extrapolate=True, which_params='Bartlett', add_correction=True)
+
 fig, axs = plt.subplots(2, 3, figsize=(12, 7))
 axs = axs.flatten()
 cmap = plt.get_cmap('Set1')
@@ -107,7 +111,8 @@ axs[2].set_title('Linear Power Spectrum')
 axs[3].semilogx(k, (1 + A_f90) / (1 + A_py3) - 1, color=cmap(0))
 axs[3].set_title('Bartlett et al. 2024 1+A correction')
 axs[4].semilogx(k, pk_f90 / pk_py3 - 1, color=cmap(0))
-axs[4].set_title('Nonlinear Power Spectrum\n(syren-halofit; Bartlett et al. 2024)')
+axs[4].set_title(
+    'Nonlinear Power Spectrum\n(syren-halofit; Bartlett et al. 2024)')
 for ax in axs:
     ax.set_ylabel('Fortran / Python - 1')
     ax.axhline(y=0, color='k')

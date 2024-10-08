@@ -51,5 +51,5 @@ jobs:
       - name: Compile and run Fortran code
         run: |
           ./setup_fortran.sh
-          ./fortran/syrenhalofit
+          ./symbolic_pofk/fortran/syrenhalofit
           python -c "import symbolic_pofk.f90_syrenhalofit"
