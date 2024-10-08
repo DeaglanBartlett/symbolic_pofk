@@ -3,11 +3,13 @@ import math
 import camb
 import unittest
 import torch
+import itertools
 
 import symbolic_pofk.linear as linear
 import symbolic_pofk.syrenhalofit as syrenhalofit
 
 import symbolic_pofk.pytorch.linear as torch_linear
+import symbolic_pofk.pytorch.syrenhalofit as torch_syrenhalofit
 
 def test_lcdm():
 
@@ -207,12 +209,12 @@ def test_lcdm_torch():
 
     # Check syren linear at various z matches numpy version
     for emulator in ['fiducial', 'max_precision']:
-        for z in np.linspace(0, 2, 5):
-            a = 1 / (1+z)
-            theta_sig8 = torch.tensor([sigma8, Om, Ob, h, ns, a],
+        for z_ in np.linspace(0, 2, 5):
+            a_ = 1 / (1+z_)
+            theta_temp = torch.tensor([sigma8, Om, Ob, h, ns, a_],
                          requires_grad=True).reshape(1, -1)
-            pk = linear.plin_emulated(k, sigma8, Om, Ob, h, ns, a, emulator=emulator, extrapolate=True)
-            torch_pk = torch_linear.plin_emulated(kt, theta_sig8, emulator=emulator)
+            pk = linear.plin_emulated(k, sigma8, Om, Ob, h, ns, a_, emulator=emulator, extrapolate=True)
+            torch_pk = torch_linear.plin_emulated(kt, theta_temp, emulator=emulator)
             assert np.allclose(pk, torch_pk.detach().numpy(), rtol=1e-4)
 
     # Check asking for a different emulator raises NotImplementedError
@@ -221,6 +223,47 @@ def test_lcdm_torch():
         torch_linear.plin_emulated,
         kt, theta_sig8,
         emulator='something_else',
+    )
+
+    # Check halofit at various z matches numpy version
+    for z_ in  np.linspace(0, 2, 5):
+        a_ = 1 / (1+z_)
+        theta_temp = torch.tensor([sigma8, Om, Ob, h, ns, a_],
+                        requires_grad=True).reshape(1, -1)
+        
+        # Halofit variables
+        ksigma = syrenhalofit.ksigma_emulated(sigma8, Om, Ob, h, ns, a_)
+        torch_ksigma = torch_syrenhalofit.ksigma_emulated(theta_temp)
+        assert np.allclose(ksigma, torch_ksigma.detach().numpy(), rtol=1e-5)
+        neff = syrenhalofit.neff_emulated(sigma8, Om, Ob, h, ns, a_)
+        torch_neff = torch_syrenhalofit.neff_emulated(theta_temp)
+        assert np.allclose(neff, torch_neff.detach().numpy(), rtol=1e-5)
+        C = syrenhalofit.C_emulated(sigma8, Om, Ob, h, ns, a_)
+        torch_C = torch_syrenhalofit.C_emulated(theta_temp)
+        assert np.allclose(C, torch_C.detach().numpy(), rtol=1e-5)
+
+        # Correction to Halofit
+        A = syrenhalofit.A_emulated(k, sigma8, Om, Ob, h, ns, a_)
+        torch_A = torch_syrenhalofit.A_emulated(kt, theta_temp)
+        assert np.allclose(A, torch_A.detach().numpy(), atol=1e-5)
+        torch_A = torch_syrenhalofit.A_emulated(kt, theta_temp, ksigma=ksigma, neff=neff, C=C)
+        assert np.allclose(A, torch_A.detach().numpy(), atol=1e-5)
+
+        # Now all combinations of halofit
+        combinations = list(itertools.product(['fiducial', 'max_precision'], ['Bartlett', 'Takahashi'], [True, False]))
+        for emulator, which_params, add_correction in combinations:
+            pk = syrenhalofit.run_halofit(k, sigma8, Om, Ob, h, ns, a_,
+                emulator=emulator, which_params=which_params, add_correction=add_correction)
+            torch_pk = torch_syrenhalofit.run_halofit(kt, theta_temp, emulator=emulator, which_params=which_params, add_correction=add_correction)
+            assert np.allclose(pk, torch_pk.detach().numpy(), rtol=1e-4)
+
+    # Check asking for a different halofit raises NotImplementedError
+    unittest.TestCase().assertRaises(
+        NotImplementedError,
+        torch_syrenhalofit.run_halofit,
+        kt, theta_sig8,
+        emulator='fiducial',
+        which_params='something_else',
     )
 
     return
