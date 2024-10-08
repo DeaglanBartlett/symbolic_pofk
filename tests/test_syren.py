@@ -395,13 +395,11 @@ def test_utils_torch():
         if isinstance(expected, type) and issubclass(expected, Exception):
             try:
                 result = torch_utils.simpson(y, x=x, dx=dx, axis=axis)
-                raise Exception(f"Expected exception for inputs {y}, {x}, {
-                                dx}, {axis} not raised: {result}, {expected}")
+                raise Exception(f"Expected exception for inputs {y}, {x}, {dx}, {axis}")
             except expected:
                 pass  # Correctly raised expected exception
             except Exception as e:
-                raise Exception(f"Unexpected exception for inputs {
-                                y}, {x}, {dx}, {axis}: {e}, {type(e)}")
+                raise Exception(f"Unexpected exception for inputs {y}, {x}, {dx}, {axis}")
         else:
             # Run the custom Simpson's rule
             result = torch_utils.simpson(y, x=x, dx=dx, axis=axis)
