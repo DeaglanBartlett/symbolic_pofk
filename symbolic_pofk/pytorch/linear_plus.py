@@ -244,7 +244,7 @@ def logF_fiducial(k_batch, theta_batch):
         :logF (torch.Tensor): The emulated logarithm of the ratio between the true linear power spectrum
     """
 
-    logF = lcdm_logF_fiducial(k_batch, theta_batch[:, :5])
+    logF = lcdm_logF_fiducial(k_batch, theta_batch[:, :5], extrapolate=True)
 
     return logF
 
