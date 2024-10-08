@@ -164,6 +164,6 @@ cython_debug/
 fortran/a.out
 *.DS_Store
 *.ipynb_checkpoints/
-fortran/syrenhalofit
-fortran/output.txt
+symbolic_pofk/fortran/syrenhalofit
+symbolic_pofk/fortran/output.txt
 examples/*png
