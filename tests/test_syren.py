@@ -2,9 +2,12 @@ import numpy as np
 import math
 import camb
 import unittest
+import torch
 
 import symbolic_pofk.linear as linear
 import symbolic_pofk.syrenhalofit as syrenhalofit
+
+import symbolic_pofk.pytorch.linear as torch_linear
 
 def test_lcdm():
 
@@ -148,3 +151,76 @@ def test_lcdm():
     return
 
 
+def test_lcdm_torch():
+
+    # Define k range
+    kmin = 9e-3
+    kmax = 9
+    nk = 400
+    k = np.logspace(np.log10(kmin), np.log10(kmax), nk)
+    kt = torch.tensor(k, requires_grad=True)
+
+    # Cosmological parameters
+    As = 2.105  # 10^9 A_s
+    h = 0.6766
+    Om = 0.3111
+    Ob = 0.02242 / h ** 2
+    ns = 0.9665
+    tau = 0.0561
+
+    # Redshift
+    z = 1
+    a = 1 / (1+z)
+    
+    theta = torch.tensor([As, Om, Ob, h, ns, a],
+                         requires_grad=True).reshape(1, -1)
+    
+    # Old sigma8 conversion
+    sigma8_old = linear.As_to_sigma8(As, Om, Ob, h, ns, old_equation=True)
+    torch_sigma8_old = torch_linear.As_to_sigma8(theta[:,:5], old_equation=True)
+    assert math.isclose(sigma8_old, torch_sigma8_old.item(), rel_tol=1e-5)
+
+    # New sigma8 conversion
+    sigma8 = linear.As_to_sigma8(As, Om, Ob, h, ns)
+    torch_sigma8 = torch_linear.As_to_sigma8(theta[:,:5])
+    assert math.isclose(sigma8, torch_sigma8.item(), rel_tol=1e-5)
+
+    theta_sig8 = theta.clone().detach()
+
+    # Old inverse sigma8 conversion
+    theta_sig8[:,0] = torch.tensor([sigma8_old])
+    As_new = linear.sigma8_to_As(sigma8_old, Om, Ob, h, ns, old_equation=True)
+    torch_As_new = torch_linear.sigma8_to_As(theta_sig8[:,:5], old_equation=True)
+    assert math.isclose(As_new, torch_As_new.item(), rel_tol=1e-5)
+
+    # New inverse sigma8 conversion
+    theta_sig8[:,0] = torch.tensor([sigma8])
+    As_new = linear.sigma8_to_As(sigma8, Om, Ob, h, ns)
+    torch_As_new = torch_linear.sigma8_to_As(theta_sig8[:,:5])
+    assert math.isclose(As_new, torch_As_new.item(), rel_tol=1e-5)
+
+    # Eisenstein and Hu
+    for integral_norm in [True, False]:
+        pk_eh = linear.pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns, integral_norm=integral_norm, use_colossus=False)
+        torch_pk_eh = torch_linear.pk_EisensteinHu_zb(kt, theta_sig8[:,:5], integral_norm=integral_norm)
+        assert np.allclose(pk_eh, torch_pk_eh.detach().numpy(), rtol=1e-5)
+
+    # Check syren linear at various z matches numpy version
+    for emulator in ['fiducial', 'max_precision']:
+        for z in np.linspace(0, 2, 5):
+            a = 1 / (1+z)
+            theta_sig8 = torch.tensor([sigma8, Om, Ob, h, ns, a],
+                         requires_grad=True).reshape(1, -1)
+            pk = linear.plin_emulated(k, sigma8, Om, Ob, h, ns, a, emulator=emulator, extrapolate=True)
+            torch_pk = torch_linear.plin_emulated(kt, theta_sig8, emulator=emulator)
+            assert np.allclose(pk, torch_pk.detach().numpy(), rtol=1e-4)
+
+    # Check asking for a different emulator raises NotImplementedError
+    unittest.TestCase().assertRaises(
+        NotImplementedError,
+        torch_linear.plin_emulated,
+        kt, theta_sig8,
+        emulator='something_else',
+    )
+
+    return

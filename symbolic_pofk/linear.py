@@ -37,7 +37,6 @@ def pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns, use_colossus=False, integral_no
         pk_eh = cosmo.matterPowerSpectrum(k, z = 0.0, model='eisenstein98_zb')
 
     elif integral_norm:
-        print("INTEGRAL NORMALISATION")
         ombom0 = Ob / Om
         om0h2 = Om * h**2
         ombh2 = Ob * h**2
@@ -83,7 +82,6 @@ def pk_EisensteinHu_zb(k, sigma8, Om, Ob, h, ns, use_colossus=False, integral_no
         pk_eh = get_pk(k, Anorm)
 
     else:
-        print("NO INTEGRAL NORMALISATION")
         As = sigma8_to_As(sigma8, Om, Ob, h, ns)
 
         ombom0 = Ob / Om
