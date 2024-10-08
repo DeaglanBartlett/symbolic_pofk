@@ -95,6 +95,9 @@ def simpson(y, *, x=None, dx=1.0, axis=-1):
     applying a correction to the last interval.
     """
 
+    if len(y) < 2:
+        raise ValueError("y must have at least 2 elements to integrate.")
+
     y = torch.as_tensor(y)
     nd = len(y.shape)
     N = y.shape[axis]
@@ -138,8 +141,6 @@ def simpson(y, *, x=None, dx=1.0, axis=-1):
             slice2 = tupleset(slice_all, axis, -2)
             slice3 = tupleset(slice_all, axis, -3)
 
-            h = torch.tensor([dx, dx], dtype=torch.float64)
-
             if x is not None:
                 # grab the last two spacings from the appropriate axis
                 hm2 = tupleset(slice_all, axis, slice(-2, -1, 1))
@@ -148,6 +149,8 @@ def simpson(y, *, x=None, dx=1.0, axis=-1):
                 diffs = torch.diff(x, dim=axis).to(torch.float64)
                 h = [diffs[hm2].squeeze(dim=axis), 
                     diffs[hm1].squeeze(dim=axis)]
+            else:
+                h = torch.tensor([dx, dx], dtype=torch.float64)
                 
             # Correction for the last interval according to Cartwright
             num = 2 * h[1] ** 2 + 3 * h[0] * h[1]
@@ -165,7 +168,6 @@ def simpson(y, *, x=None, dx=1.0, axis=-1):
             result += alpha*y[slice1] + beta*y[slice2] - eta*y[slice3]
 
         result += val
-
     else:
         result = _basic_simpson(y, 0, N-2, x, dx, axis)
     if returnshape:
@@ -173,7 +175,6 @@ def simpson(y, *, x=None, dx=1.0, axis=-1):
 
     return result
 
-import torch
 
 def hypergeometric_series(a, b, c, z, max_iter=10000, tolerance=1.0e-6):
     """
@@ -190,7 +191,7 @@ def hypergeometric_series(a, b, c, z, max_iter=10000, tolerance=1.0e-6):
     Returns:
         F (torch.Tensor): The computed hypergeometric series value.
     """
-    
+
     if torch.any(torch.abs(z) >= 1.0):
         raise ValueError("This implementation may not be accurate for |z| >= 1.")
 
@@ -235,22 +236,19 @@ def hyp2f1(a, b, c, z):
     # Initialize result tensor
     result = torch.zeros_like(z)
 
-    # Check for z within the acceptable range for direct series expansion
-    within_range = torch.abs(z) < 1.0
-    out_of_range = torch.abs(z) > 1.0
-
     # Handle cases where |z| < 1
-    if torch.any(within_range):
-        result[within_range] = hypergeometric_series(a, b, c, z[within_range])
+    m = torch.abs(z) < 1.0
+    if torch.any(m):
+        result[m] = hypergeometric_series(a, b, c, z[m])
 
-    # Handle cases where |z| > 1 using Euler's transformation
-    if torch.any(out_of_range):
-        new_z = z[out_of_range] / (z[out_of_range] - 1.0)
-        result[out_of_range] = (1.0 - z[out_of_range]) ** (-a) * \
-                               hypergeometric_series(a, c - b, c, new_z)
+    # Handle cases where z < -1 using Euler's transformation
+    m = z < -1.0
+    if torch.any(m):
+        new_z = z[m] / (z[m] - 1.0)
+        result[m] = (1.0 - z[m]) ** (-a) *  hypergeometric_series(a, c - b, c, new_z)
         
-    # Handle cases where |z| = 1
-    if torch.any(torch.abs(z) == 1.0):
-        result[torch.abs(z) == 1.0] = torch.tensor(float("inf"))
+    # Handle cases where z >= 1
+    if torch.any(z >= 1.0):
+        result[z >= 1.0] = torch.tensor(float("inf"))
 
     return result

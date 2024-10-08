@@ -4,12 +4,14 @@ import camb
 import unittest
 import torch
 import itertools
+import scipy.special
 
 import symbolic_pofk.linear as linear
 import symbolic_pofk.syrenhalofit as syrenhalofit
 
 import symbolic_pofk.pytorch.linear as torch_linear
 import symbolic_pofk.pytorch.syrenhalofit as torch_syrenhalofit
+import symbolic_pofk.pytorch.utils as torch_utils
 
 def test_lcdm():
 
@@ -267,3 +269,135 @@ def test_lcdm_torch():
     )
 
     return
+
+
+def test_utils_torch():
+
+    # Test Simpon's rule integrator
+    test_cases = [
+        # Valid cases
+        {
+            'y': torch.tensor([0, 1, 4], dtype=torch.float64), 
+            'x': torch.tensor([0, 1, 2], dtype=torch.float64), 
+            'dx': None, 
+            'expected': (8 / 3.0),  # Integral of y = x^2 from 0 to 2
+            'axis': -1
+        },
+        {
+            'y': torch.tensor([0, 1, 4, 9, 16], dtype=torch.float64),
+            'x': torch.tensor([0, 1, 2, 3, 4], dtype=torch.float64),
+            'dx': None,
+            'expected': (64 / 15.0),  # Integral of y = x^2 from 0 to 4
+            'axis': -1
+        },
+        {
+            'y': torch.tensor([1, 2, 1], dtype=torch.float64),
+            'x': torch.tensor([0, 1, 2], dtype=torch.float64),
+            'dx': None,
+            'expected': 1.0,  # Integral of y = 1 - |x-1| from 0 to 2
+            'axis': -1
+        },
+        
+        # Edge cases
+        {
+            'y': torch.tensor([]),
+            'x': torch.tensor([]),
+            'dx': 1.0,
+            'expected': ValueError,
+            'axis': -1
+        },
+        {
+            'y': torch.tensor([1]),
+            'x': torch.tensor([0]),
+            'dx': 1.0,
+            'expected': ValueError,
+            'axis': -1
+        },
+        {
+            'y': torch.tensor([1, 2]),
+            'x': torch.tensor([0, 1]),
+            'dx': None,
+            'expected': 1.0,  # Trapezoidal result for two points
+            'axis': -1
+        },
+        {
+            'y': torch.tensor([1, 2, 3]),
+            'x': torch.tensor([0, 1, 2]),
+            'dx': None,
+            'expected': 2.0,  # Valid case with three points
+            'axis': -1
+        },
+        {
+            'y': torch.sin(torch.linspace(0, np.pi, 5)),
+            'x': torch.linspace(0, np.pi, 5),
+            'dx': None,
+            'expected': 2.0,  # Integral of sin(x) from 0 to π
+            'axis': -1
+        },
+        {
+            'y': torch.exp(torch.linspace(0, 1, 5)),
+            'x': torch.linspace(0, 1, 5),
+            'dx': None,
+            'expected': (np.exp(1) - 1),  # Integral of exp(x) from 0 to 1
+            'axis': -1
+        }
+    ]
+    
+    for case in test_cases:
+
+        y = case['y']
+        x = case['x']
+        dx = case['dx']
+        expected = case['expected']
+        axis = case['axis']
+        
+        if isinstance(expected, type) and issubclass(expected, Exception):
+            try:
+                result = torch_utils.simpson(y, x=x, dx=dx, axis=axis)
+                raise Exception(f"Expected exception for inputs {y}, {x}, {dx}, {axis} not raised: {result}, {expected}")
+            except expected:
+                pass  # Correctly raised expected exception
+            except Exception as e:
+                raise Exception(f"Unexpected exception for inputs {y}, {x}, {dx}, {axis}: {e}, {type(e)}")
+        else:
+            # Run the custom Simpson's rule
+            result = torch_utils.simpson(y, x=x, dx=dx, axis=axis)
+            # Compare with the SciPy Simpson's rule
+            if x is None:
+                scipy_result = scipy.integrate.simpson(y.numpy(), dx=dx)
+            else:
+                scipy_result = scipy.integrate.simpson(y.numpy(), x=x.numpy())
+            
+            # Check if results are similar within a tolerance
+            np.testing.assert_allclose(result.numpy(), scipy_result, rtol=1e-5, err_msg=f"Failed for inputs {y}, {x}, {dx}, {axis}")
+
+
+    # Test hypergeometric function
+    test_cases = [
+        # (a, b, c, z, expected_result_function, tolerance)
+        (0.5, 0.5, 1.0, torch.tensor([0.5])),
+        (0.5, 0.5, 1.0, torch.tensor([1.0])),
+        (0.5, 0.5, 1.0, torch.tensor([2.0])),
+        (0.0, 0.0, 1.0, torch.tensor([0.5])),
+        (1000.0, 1000.0, 2000.0, torch.tensor([0.5])),
+        (0.5, 0.5, 1.0, torch.tensor([-0.5])),
+    ]
+    for i, (a, b, c, z) in enumerate(test_cases):
+        expected = scipy.special.hyp2f1(a, b, c, z).item()
+        result = torch_utils.hyp2f1(a, b, c, z)
+        assert np.isclose(result, torch.tensor(expected), atol=1e-6), \
+            f"Test case {i+1} failed: Expected {expected}, got {result.item()}"
+            
+    # Test error raised for hypergeometric series for invalid argument
+    unittest.TestCase().assertRaises(
+        ValueError,
+        torch_utils.hypergeometric_series,
+        0.5, 0.5, 1.0, torch.tensor([2.0]),
+        max_iter=10000,
+        tolerance=1.0e-6
+    )
+
+    return
+
+# test_utils_torch()
+# 47, 56, 57, 116-117, 153, 
