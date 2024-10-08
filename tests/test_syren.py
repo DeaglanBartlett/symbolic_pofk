@@ -291,6 +291,20 @@ def test_utils_torch():
             'axis': -1
         },
         {
+            'y': torch.tensor([0, 1, 4, 9, 16], dtype=torch.float64),
+            'x': None,
+            'dx': 1.0,
+            'expected': (64 / 15.0),  # Integral of y = x^2 from 0 to 4
+            'axis': -1
+        },
+        {
+            'y': torch.tensor([0, 1, 4, 9], dtype=torch.float64),
+            'x': None,
+            'dx': 1.0,
+            'expected': (9),  # Integral of y = x^2 from 0 to 3
+            'axis': -1
+        },
+        {
             'y': torch.tensor([1, 2, 1], dtype=torch.float64),
             'x': torch.tensor([0, 1, 2], dtype=torch.float64),
             'dx': None,
@@ -340,9 +354,23 @@ def test_utils_torch():
             'dx': None,
             'expected': (np.exp(1) - 1),  # Integral of exp(x) from 0 to 1
             'axis': -1
-        }
+        },
+        {
+            'y': torch.Tensor([1, 2, 3]),
+            'x': torch.Tensor([[1, 2, 3], [4, 5, 6]]),
+            'dx': None,
+            'expected': ValueError,  # y is 1-d by x is multi-d
+            'axis': -1
+        },
+        {
+            'y': torch.exp(torch.linspace(0, 1, 5)),
+            'x': torch.linspace(0, 1, 6),
+            'dx': None,
+            'expected': ValueError,  # x and y have different lengths
+            'axis': -1
+        },
     ]
-    
+
     for case in test_cases:
 
         y = case['y']
@@ -371,6 +399,14 @@ def test_utils_torch():
             # Check if results are similar within a tolerance
             np.testing.assert_allclose(result.numpy(), scipy_result, rtol=1e-5, err_msg=f"Failed for inputs {y}, {x}, {dx}, {axis}")
 
+    # Check _basic_simpson behaves as expected when stary is None (it should be set to 0)
+    y = torch.tensor([0, 1, 4], dtype=torch.float64)
+    x = torch.tensor([0, 1, 2], dtype=torch.float64)
+    dx = None
+    axis = -1
+    result_0 = torch_utils._basic_simpson(y, 0, 2, x, dx, axis)
+    result_None = torch_utils._basic_simpson(y, None, 2, x, dx, axis)
+    np.testing.assert_equal(result_0, result_None)
 
     # Test hypergeometric function
     test_cases = [
@@ -398,6 +434,3 @@ def test_utils_torch():
     )
 
     return
-
-# test_utils_torch()
-# 47, 56, 57, 116-117, 153, 
