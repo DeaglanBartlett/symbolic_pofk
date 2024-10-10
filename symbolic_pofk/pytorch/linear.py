@@ -32,13 +32,46 @@ def growth_factor(Om, acosmo):
 
     return Da
 
+def growth_factor_approx(Om, a):
+    """
+    Compute the approximate growth factor D(a), normalised to a=1, based on the Eisenstein & Hu (1998).
+    This function provides a much faster computation of the growth factor, especially when using GPUs.
 
-def pk_EisensteinHu_zb(k, theta_batch, integral_norm=True):
+    Args:
+        :Om (torch.Tensor): The z=0 total matter density parameter
+        :a (torch.Tensor): The scale factor.
+
+    Returns:
+        :Da (torch.Tensor): The normalised growth factor D(a).
+    """
+
+    def get_D1_a(aa):
+
+        z = 1 / aa - 1
+
+        Omega = Om * aa ** (-3)
+        OL = (1 - Om)
+        g = torch.sqrt(Omega + OL)
+        Omega /= g ** 2
+        OL /= g ** 2
+
+        D1 = (
+            1/ (1 + z) * 5 * Omega / 2 /
+            (Omega ** (4/7) - OL + (1 + Omega/2) * (1 + OL/70))
+        )
+
+        return D1
+
+    return get_D1_a(a)/get_D1_a(1)
+
+
+
+def pk_EisensteinHu_zb(kbatch, theta_batch, integral_norm=True):
     """
     Compute the Eisentein & Hu 1998 zero-baryon approximation to P(k) at z=0
 
     Args:
-        :k (torch.Tensor): k values [h/Mpc] with shape (n_k)
+        :kbatch (torch.Tensor): k values [h/Mpc] with shape (n_k,1)
         :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 5),
             the 5 parameters are :
                 sigma8: Root-mean-square density fluctuation when the linearly
@@ -93,19 +126,19 @@ def pk_EisensteinHu_zb(k, theta_batch, integral_norm=True):
 
         # Find normalisation
         R = 8.0
-        kk = torch.exp(torch.linspace(b0, b1, n))
+        kk = torch.exp(torch.linspace(b0, b1, n)).unsqueeze(1).to(device)
         x = kk * R
-        W = torch.zeros(x.shape)
+        W = torch.zeros(x.shape).to(device)
         m = x < 1.e-3
         W[m] = 1.0
         W[~m] = 3.0 / x[~m]**3 * (torch.sin(x[~m]) - x[~m] * torch.cos(x[~m]))
         y = get_pk(kk, 1.0) * W**2 * kk**3
-        sigma2 = simpson(y, x=torch.log(x))
+        sigma2 = simpson(y, x=torch.log(x), axis=0)
 
         sigmaExact = torch.sqrt(sigma2 / (2.0 * torch.pi**2))
         Anorm = (sigma8 / sigmaExact)**2
 
-        pk_eh = get_pk(k, Anorm)
+        pk_eh = get_pk(kbatch, Anorm)
 
     else:
         As = sigma8_to_As(theta_batch[:, :5])
@@ -122,10 +155,10 @@ def pk_EisensteinHu_zb(k, theta_batch, integral_norm=True):
             torch.log(431.0 * om0h2) * ombom0 + 0.38 * \
             torch.log(22.3 * om0h2) * ombom0**2
         Gamma = Om * h * (alphaGamma + (1.0 - alphaGamma) /
-                          (1.0 + (0.43 * k * h * s)**4))
+                          (1.0 + (0.43 * kbatch * h * s)**4))
 
         # Compute q, C0, L0, and tk_eh
-        q = k * theta2p7**2 / Gamma
+        q = kbatch * theta2p7**2 / Gamma
         C0 = 14.2 + 731.0 / (1.0 + 62.5 * q)
         L0 = torch.log(
             2.0 * torch.exp(torch.tensor(1.0, device=device)) + 1.8 * q)
@@ -134,9 +167,9 @@ def pk_EisensteinHu_zb(k, theta_batch, integral_norm=True):
         kpivot = 0.05
 
         pk_eh = (
-            2 * torch.pi ** 2 / k ** 3
-            * (As * 1e-9) * (k * h / kpivot) ** (ns - 1)
-            * (2 * k ** 2 * 2998**2 / 5 / Om) ** 2
+            2 * torch.pi ** 2 / kbatch ** 3
+            * (As * 1e-9) * (kbatch * h / kpivot) ** (ns - 1)
+            * (2 * kbatch ** 2 * 2998**2 / 5 / Om) ** 2
             * tk_eh ** 2
         )
 
@@ -229,7 +262,7 @@ def logF_fiducial(k_batch, theta_batch, extrapolate=False, kmin=9.e-3, kmax=9):
     logF = line1 + line2 + line3 + line4
 
     # Use Bartlett et al. 2023 P(k) only in tested regime
-    m = ~((k_batch >= kmin) & (k_batch <= kmax))
+    m = ~((k_batch >= kmin) & (k_batch <= kmax)).squeeze(1)
     if (not extrapolate) and m.sum() > 0:
         warnings.warn(
             "Not using Bartlett et al. formula outside tested regime")
@@ -321,13 +354,13 @@ def logF_max_precision(k, theta_batch, extrapolate=False, kmin=9.e-3, kmax=9):
     return logF
 
 
-def plin_emulated(k, theta_batch, emulator='fiducial', extrapolate=False, kmin=9.e-3, kmax=9):
+def plin_emulated(k, theta_batch, emulator='fiducial', extrapolate=False, kmin=9.e-3, kmax=9, use_approx_D=True):
     """
     Compute the emulated linear matter power spectrum using the fits of
     Eisenstein & Hu 1998 and Bartlett et al. 2023.
 
     Args:
-        :k_batch (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
+        :k (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k)
         :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 6),
             the 6 parameters are :
                 sigma8: Root-mean-square density fluctuation when the linearly
@@ -347,18 +380,22 @@ def plin_emulated(k, theta_batch, emulator='fiducial', extrapolate=False, kmin=9
             if extrapolate=False
         :kmax (float, default=9): Maximum k value to use Bartlett et al. formula
             if extrapolate=False
+        :use_approx_D (bool, default=True): Whether to use the approximate growth factor
 
     Returns:
         :pk_lin (torch.Tensor): The emulated linear P(k) [(Mpc/h)^3]
     """
 
-    p_eh = pk_EisensteinHu_zb(k, theta_batch[:, :5], integral_norm=True)
+    # add a dimension to k for broadcasting
+    kbatch = k.unsqueeze(1).to(device)
+
+    p_eh = pk_EisensteinHu_zb(kbatch, theta_batch[:, :5], integral_norm=True)
     if emulator == 'fiducial':
         logF = logF_fiducial(
-            k, theta_batch[:, :5], extrapolate=extrapolate, kmin=kmin, kmax=kmax)
+            kbatch, theta_batch[:, :5], extrapolate=extrapolate, kmin=kmin, kmax=kmax)
     elif emulator == 'max_precision':
         logF = logF_max_precision(
-            k, theta_batch[:, :5], extrapolate=extrapolate, kmin=kmin, kmax=kmax)
+            kbatch, theta_batch[:, :5], extrapolate=extrapolate, kmin=kmin, kmax=kmax)
     else:
         raise NotImplementedError
     p_lin = p_eh * torch.exp(logF)
@@ -366,10 +403,13 @@ def plin_emulated(k, theta_batch, emulator='fiducial', extrapolate=False, kmin=9
     _, Om, _, _, _, a = theta_batch.unbind(dim=1)
 
     if torch.any(a != 1):
-        D = growth_factor(Om, a)
+        if use_approx_D:
+            D = growth_factor_approx(Om, a)
+        else:
+            D = growth_factor(Om, a)
         p_lin *= D ** 2
 
-    return p_lin
+    return p_lin.T
 
 
 def sigma8_to_As(theta_batch, old_equation=False):

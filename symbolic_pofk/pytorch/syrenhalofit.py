@@ -28,7 +28,7 @@ def ksigma_emulated(theta_batch):
 
     sigma8, Om, Ob, h, ns, a = theta_batch.unbind(dim=1)
 
-    c = torch.Tensor([4.35761588, 0.83576576, 0.43023897, 20.107738, 0.259285, 0.573205,
+    c = torch.tensor([4.35761588, 0.83576576, 0.43023897, 20.107738, 0.259285, 0.573205,
                       1.680897, 20.043272, 0.425699, 0.39078063], device=device)
     ksigma = (
         c[0] * (a * c[1] * (c[2] - sigma8)
@@ -64,7 +64,7 @@ def neff_emulated(theta_batch):
 
     sigma8, Om, Ob, h, ns, a = theta_batch.unbind(dim=1)
 
-    theta = torch.Tensor([1.65139294e+00, 4.88150280e+00, 5.12499000e-01, 1.48848000e-01,
+    theta = torch.tensor([1.65139294e+00, 4.88150280e+00, 5.12499000e-01, 1.48848000e-01,
                           1.56499400e+01, 2.39307000e-01, 1.34631000e-01], device=device)
     neff = (
         (theta[0] * ns - theta[1])*(theta[2] * Ob - theta[3] * h
@@ -97,7 +97,7 @@ def C_emulated(theta_batch):
 
     sigma8, Om, Ob, h, ns, a = theta_batch.unbind(dim=1)
 
-    b = torch.Tensor([0.335853, 1.42946178682748, 0.115256188211481, 0.057211, 48.072159, 0.194058,
+    b = torch.tensor([0.335853, 1.42946178682748, 0.115256188211481, 0.057211, 48.072159, 0.194058,
                       1.176006, 1.015136, 0.235398, 0.359587, 2.389843, 0.356875, 0.443138], device=device)
     C = (
         b[0]*sigma8 - b[1]*torch.sqrt(b[2]*ns + sigma8*(b[3]*h + (b[4]*Om)**(b[5]*a) -
@@ -146,7 +146,7 @@ def A_emulated(k, theta_batch, ksigma=None, neff=None, C=None):
         C = C_emulated(theta_batch)
     y = k / ksigma
 
-    d = torch.Tensor([0.0, 0.2011, 1.2983, 16.8733, 3.6428, 1.0622, 0.1023, 2.2204,
+    d = torch.tensor([0.0, 0.2011, 1.2983, 16.8733, 3.6428, 1.0622, 0.1023, 2.2204,
                       0.0105, 0.487, 0.6151, 0.3377, 3.315, 3.9819, 1.3572, 3.3259,
                       0.3872, 4.1175, 2.6795, 5.3394, 0.0338], device=device)
 
@@ -172,7 +172,7 @@ def run_halofit(k, theta_batch, emulator='fiducial', extrapolate=True, which_par
     obtained with the default parameters.
 
     Args:
-        :k_batch (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
+        :k (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k)
         :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 6),
             the 6 parameters are :
                 sigma8: Root-mean-square density fluctuation when the linearly
@@ -199,27 +199,31 @@ def run_halofit(k, theta_batch, emulator='fiducial', extrapolate=True, which_par
     """
 
     if which_params == 'Bartlett':
-        pars = torch.Tensor([1.5358,  2.8533,  2.3692,  0.9916,  0.2244,  0.5862, -0.565,  0.5871,
+        pars = torch.tensor([1.5358,  2.8533,  2.3692,  0.9916,  0.2244,  0.5862, -0.565,  0.5871,
                              0.5757, -1.505,   0.3913,  2.0252,  0.7971,  0.5989,  0.2216, -0.001,
                              1.1771,  5.2082, 3.7324, -0.0158, -0.0972,  0.155,   6.1043,  1.3408,
                              -0.2138, -5.325,   1.9967, -0.7176,  0.3108,  1.2477,  0.4018, -0.3837,], device=device)
     elif which_params == 'Takahashi':
-        pars = torch.Tensor([1.5222, 2.8553, 2.3706, 0.9903, 0.2250, 0.6083,
+        pars = torch.tensor([1.5222, 2.8553, 2.3706, 0.9903, 0.2250, 0.6083,
                              -0.5642, 0.5864, 0.5716, -1.5474, 0.3698, 2.0404, 0.8161, 0.5869,
                              0.1971, -0.0843, 0.8460, 5.2105, 3.6902, -0.0307, -0.0585,
                              0.0743, 6.0835, 1.3373, -0.1959, -5.5274, 2.0379, -0.7354, 0.3157,
                              1.2490, 0.3980, -0.1682], device=device)
     else:
         raise NotImplementedError
+    
+    # Get linear P(k)
+    plin = plin_emulated(k, theta_batch, emulator=emulator,
+                         extrapolate=extrapolate).T
+
+    k = k.unsqueeze(1).to(device)
 
     ksigma = ksigma_emulated(theta_batch)
     neff = neff_emulated(theta_batch)
     C = C_emulated(theta_batch)
     y = k / ksigma
 
-    # Get linear P(k)
-    plin = plin_emulated(k, theta_batch, emulator=emulator,
-                         extrapolate=extrapolate)
+
 
     sigma8, Om, Ob, h, ns, a = theta_batch.unbind(dim=1)
 
@@ -262,4 +266,4 @@ def run_halofit(k, theta_batch, emulator='fiducial', extrapolate=True, which_par
     if add_correction:
         p_nl *= 1 + A_emulated(k, theta_batch, ksigma=ksigma, neff=neff, C=C)
 
-    return p_nl
+    return p_nl.T
