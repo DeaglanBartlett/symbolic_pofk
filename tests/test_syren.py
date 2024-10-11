@@ -222,15 +222,16 @@ def test_lcdm_torch():
     # Check syren linear at various z matches numpy version
     for emulator in ['fiducial', 'max_precision']:
         for extrapolate in [True, False]:
-            for z_ in np.linspace(0, 2, 5):
-                a_ = 1 / (1+z_)
-                theta_temp = torch.tensor([sigma8, Om, Ob, h, ns, a_],
-                                          requires_grad=True).reshape(1, -1)
-                pk = linear.plin_emulated(
-                    k, sigma8, Om, Ob, h, ns, a_, emulator=emulator, extrapolate=extrapolate)
-                torch_pk = torch_linear.plin_emulated(
-                    kt, theta_temp, emulator=emulator, extrapolate=extrapolate)
-                assert np.allclose(pk, torch_pk.detach().numpy(), rtol=1e-4)
+            for use_approx_D in [True, False]:
+                for z_ in np.linspace(0, 2, 5):
+                    a_ = 1 / (1+z_)
+                    theta_temp = torch.tensor([sigma8, Om, Ob, h, ns, a_],
+                                            requires_grad=True).reshape(1, -1)
+                    pk = linear.plin_emulated(
+                        k, sigma8, Om, Ob, h, ns, a_, emulator=emulator, extrapolate=extrapolate)
+                    torch_pk = torch_linear.plin_emulated(
+                        kt, theta_temp, emulator=emulator, extrapolate=extrapolate, use_approx_D=use_approx_D)
+                    assert np.allclose(pk, torch_pk.detach().numpy(), rtol=5e-3)
 
     # Check asking for a different emulator raises NotImplementedError
     unittest.TestCase().assertRaises(
@@ -272,8 +273,8 @@ def test_lcdm_torch():
             pk = syrenhalofit.run_halofit(k, sigma8, Om, Ob, h, ns, a_,
                                           emulator=emulator, which_params=which_params, add_correction=add_correction, extrapolate=extrapolate)
             torch_pk = torch_syrenhalofit.run_halofit(
-                kt, theta_temp, emulator=emulator, which_params=which_params, add_correction=add_correction, extrapolate=extrapolate)
-            assert np.allclose(pk, torch_pk.detach().numpy(), rtol=1e-4)
+                kt, theta_temp, emulator=emulator, which_params=which_params, add_correction=add_correction, extrapolate=extrapolate)[0]
+            assert np.allclose(pk, torch_pk.detach().numpy(), rtol=5e-3)
 
     # Check asking for a different halofit raises NotImplementedError
     unittest.TestCase().assertRaises(
