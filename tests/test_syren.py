@@ -479,10 +479,14 @@ def test_syren_plus():
     
     # Get sigma8 for this As
     sigma8 = linear_plus.As_to_sigma8(As, Om, Ob, h, ns, mnu, w0, wa)
+    sigma8_max_prec = linear_plus.As_to_sigma8_max_precision(As, Om, Ob, h, ns, mnu, w0, wa)
 
     # See what As you get in reverse
     As_new = linear_plus.sigma8_to_As(sigma8, Om, Ob, h, ns, mnu, w0, wa)
+    As_new_max_prec = linear_plus.sigma8_to_As_max_precision(sigma8_max_prec, Om, Ob, h, ns, mnu, w0, wa)
     assert math.isclose(As, As_new, rel_tol=1e-2)
+    assert math.isclose(As, As_new_max_prec, rel_tol=1e-4)
+    assert math.isclose(sigma8, sigma8_max_prec, rel_tol=1e-2)
 
     # Compute P(k) using camb
     num_massive_neutrinos = (3
