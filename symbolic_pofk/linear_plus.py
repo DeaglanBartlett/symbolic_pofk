@@ -79,6 +79,101 @@ def sigma8_to_As(sigma8, Om, Ob, h, ns, mnu, w0, wa):
     return (sigma8/result)**2
 
 
+def As_to_sigma8_max_precision(As, Om, Ob, h, ns, mnu, w0, wa):
+    """
+    Compute the emulated conversion As -> sigma8, using the most accurate expression
+
+    Args:
+        :As (float): 10^9 times the amplitude of the primordial P(k)
+        :Om (float): The z=0 total matter density parameter, Om
+        :Ob (float): The z=0 baryonic density parameter, Ob
+        :h (float): Hubble constant, H0, divided by 100 km/s/Mpc
+        :ns (float): Spectral tilt of primordial power spectrum
+        :mnu (float): Sum of neutrino masses [eV / c^2]
+        :w0 (float): Time independent part of the dark energy EoS
+        :wa (float): Time dependent part of the dark energy EoS
+
+    Returns:
+        :sigma8 (float): Root-mean-square density fluctuation when the linearly
+            evolved field is smoothed with a top-hat filter of radius 8 Mpc/h
+    """
+
+    b = np.array([0.0246, 2.1062, 2.9355, 0.7626, 0.2962, 0.5096, 
+                  4.4025, 3.6495, 0.4144, 0.8615, 0.6188, 0.1751, 
+                  0.824, 0.5466, 0.5519, 0.3689, 0.3261, 0.2002, 
+                  0.8892, 0.4462, 1.215, 3.4829, 2.5852, 0.0242, 
+                  0.0051, 0.1614, 1.2991, 4.1426, 3.3055, 0.5716, 
+                  6.0094, 1.9569, 2.1477, 1.1902, 0.128, 0.6931, 
+                  0.2661])
+
+    term1_inner = (Om * b[1] + 
+                   (b[2] * mnu - b[3] * ns + np.log(b[4] * h - b[5] * mnu)) *
+                   (b[6] * h + b[7] * mnu - b[8] * ns + 1))
+    term1 = b[0] * term1_inner
+    
+    term2 = b[9] * h - mnu
+
+    term3_inner1 = (b[12] * w0 - b[13] * wa - np.log(Om * b[14])) * \
+                   (Om * b[15] + b[16] * w0 + b[17] * wa + np.log(-b[18] * w0 - b[19] * wa))
+    term3_inner2 = np.log(Om * b[20] + np.log(-b[21] * w0 - b[22] * wa))
+    term3 = b[10] * w0 - b[11] * mnu - term3_inner1 - term3_inner2 + np.log(-b[23] * w0 - b[24] * wa)
+    
+    term4_inner1 = Ob * b[30] - b[31] * h - np.log(Om * b[32])
+    term4_inner2 = Om * b[33] - b[34] * h - b[35] * mnu - b[36] * ns
+    term4 = b[25] * mnu - np.sqrt(Ob) * b[26] - Ob * b[27] + Om * b[28] - b[29] * h + 1 + term4_inner1 * term4_inner2
+
+    result = term1 * term2 * term3 * term4
+    
+    return result*np.sqrt(As)
+
+
+def sigma8_to_As_max_precision(sigma8, Om, Ob, h, ns, mnu, w0, wa):
+    """
+    Compute the emulated conversion sigma8 -> As, using the most accurate expression
+
+    Args:
+        :sigma8 (float): The z=0 rms mass fluctuation in spheres of radius 8 Mpc/h
+        :Om (float): The z=0 total matter density parameter, Om
+        :Ob (float): The z=0 baryonic density parameter, Ob
+        :h (float): Hubble constant, H0, divided by 100 km/s/Mpc
+        :ns (float): Spectral tilt of primordial power spectrum
+        :mnu (float): Sum of neutrino masses [eV / c^2]
+        :w0 (float): Time independent part of the dark energy EoS
+        :wa (float): Time dependent part of the dark energy EoS
+
+    Returns:
+        :As (float): 10^9 times the amplitude of the primordial P(k)
+    """
+
+    b = np.array([0.0246, 2.1062, 2.9355, 0.7626, 0.2962, 0.5096, 
+                  4.4025, 3.6495, 0.4144, 0.8615, 0.6188, 0.1751, 
+                  0.824, 0.5466, 0.5519, 0.3689, 0.3261, 0.2002, 
+                  0.8892, 0.4462, 1.215, 3.4829, 2.5852, 0.0242, 
+                  0.0051, 0.1614, 1.2991, 4.1426, 3.3055, 0.5716, 
+                  6.0094, 1.9569, 2.1477, 1.1902, 0.128, 0.6931, 
+                  0.2661])
+
+    term1_inner = (Om * b[1] + 
+                   (b[2] * mnu - b[3] * ns + np.log(b[4] * h - b[5] * mnu)) *
+                   (b[6] * h + b[7] * mnu - b[8] * ns + 1))
+    term1 = b[0] * term1_inner
+    
+    term2 = b[9] * h - mnu
+
+    term3_inner1 = (b[12] * w0 - b[13] * wa - np.log(Om * b[14])) * \
+                   (Om * b[15] + b[16] * w0 + b[17] * wa + np.log(-b[18] * w0 - b[19] * wa))
+    term3_inner2 = np.log(Om * b[20] + np.log(-b[21] * w0 - b[22] * wa))
+    term3 = b[10] * w0 - b[11] * mnu - term3_inner1 - term3_inner2 + np.log(-b[23] * w0 - b[24] * wa)
+    
+    term4_inner1 = Ob * b[30] - b[31] * h - np.log(Om * b[32])
+    term4_inner2 = Om * b[33] - b[34] * h - b[35] * mnu - b[36] * ns
+    term4 = b[25] * mnu - np.sqrt(Ob) * b[26] - Ob * b[27] + Om * b[28] - b[29] * h + 1 + term4_inner1 * term4_inner2
+
+    result = term1 * term2 * term3 * term4
+    
+    return (sigma8/result)**2
+
+
 def growth_correction_R(As, Om, Ob, h, ns, mnu, w0, wa, a):
     """
     Correction to the growth factor 
