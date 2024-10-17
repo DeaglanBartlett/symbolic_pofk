@@ -2,6 +2,7 @@
 
 [![arXiv](https://img.shields.io/badge/arXiv-2311.15865-b31b1b.svg)](https://arxiv.org/abs/2311.15865)
 [![arXiv](https://img.shields.io/badge/arXiv-2402.17492-b31b1b.svg)](https://arxiv.org/abs/2402.17492)
+[![arXiv](https://img.shields.io/badge/arXiv-2410.XXXXX-b31b1b.svg)](https://arxiv.org/abs/2410.XXXXX)
 
 [![Coverage](https://img.shields.io/codecov/c/github/DeaglanBartlett/symbolic_pofk)](https://app.codecov.io/gh/DeaglanBartlett/symbolic_pofk)
 [![Build Status](https://github.com/DeaglanBartlett/symbolic_pofk/actions/workflows/build-linux.yml/badge.svg)](https://github.com/DeaglanBartlett/symbolic_pofk/actions/workflows/build-linux.yml)
@@ -13,8 +14,10 @@ Precise symbolic emulators of the linear and non-linear matter power spectra and
 $\sigma_8 \leftrightarrow A_{\rm s}$ as a function of cosmology.
 Here we give the emulators as simple python functions and as a fortran90 routine, but these can be 
 easily copied, pasted and modified to the language of your choice.
-Please see [Bartlett et al. 2023](https://arxiv.org/abs/2311.15865) 
-and [Bartlett et al. 2024](https://arxiv.org/abs/2402.17492) 
+Please see 
+[Bartlett et al. 2023](https://arxiv.org/abs/2311.15865), 
+[Bartlett et al. 2024](https://arxiv.org/abs/2402.17492),
+and [Sui et al. 2024](https://arxiv.org/abs/2410.XXXXX)
 for further details.
 
 By default, outside the $k$ range tested in Bartlett et al. 2023, 
@@ -29,7 +32,12 @@ To install the emulators and the dependencies, run the following
 
 ```
 git clone git@github.com:DeaglanBartlett/symbolic_pofk.git
-pip install -e symbolic_pofk
+pip install symbolic_pofk
+```
+
+If you wish to use the pytorch code, the second line should be replaced with
+```
+pip install "symbolic_pofk[torch]"
 ```
 
 If you wish to use the fortran version of the code, running the script
@@ -40,9 +48,11 @@ will compile the fortran code and will produce a python wrapper for this.
 
 ## Examples
 
-We give an example for how to use the 
+We give an example for how to use the ΛCDM
 linear emulator in `examples/linear_example.py`.
 and the non-linear emulator in `examples/halofit_example.py`.
+And we show how to use the emulators for the extended cosmology
+(including neutrino masses, $w_0$ and $w_a$) in `examples/syren_new_example.ipynb`.
 
 The example `examples/fortran_example.py` shows how to run the
 fortran code with the python wrapper, and compares the difference
@@ -94,6 +104,26 @@ primaryClass = {astro-ph.CO},
 }
 ```
 
+and if you use the extended cosmologies, please cite
+```
+@ARTICLE{syren_new,
+     author = {{Sui}, C. and {Bartlett}, D.~J. and {Pandey}, S. and {Wandelt}, B.~D. 
+     and {Desmond}, H. and {Ferreira}, P.~G.},  
+      title = "{syren-new: Precise formulae for the linear and nonlinear matter power spectra 
+      with massive neutrinos and dynamical dark energy}",
+    journal = {arXiv e-prints},
+   keywords = {Astrophysics - Cosmology and Nongalactic Astrophysics},
+       year = 2024,
+      month = oct,
+        eid = {arXiv:2410.XXXXX},
+      pages = {arXiv:2410.XXXXX},
+        doi = {10.48550/arXiv.2410.XXXXX},
+archivePrefix = {arXiv},
+     eprint = {2410.XXXXX},
+primaryClass = {astro-ph.CO},
+        url = {https://arxiv.org/abs/2410.XXXXX},
+}
+```
 
 The software is available on the MIT licence:
 
