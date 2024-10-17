@@ -48,7 +48,7 @@ will compile the fortran code and will produce a python wrapper for this.
 
 ## Examples
 
-We give an example for how to use the $\Lambda$CDM
+We give an example for how to use the ΛCDM
 linear emulator in `examples/linear_example.py`.
 and the non-linear emulator in `examples/halofit_example.py`.
 And we show how to use the emulators for the extended cosmology
