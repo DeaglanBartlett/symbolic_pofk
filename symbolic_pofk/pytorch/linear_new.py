@@ -249,7 +249,7 @@ def logF_fiducial(k_batch, theta_batch):
     return logF
 
 
-def plin_plus_emulated(k, theta_batch):
+def plin_new_emulated(k, theta_batch):
     """
     Fiducial power spectrum given in Bartlett et al. 2023 for a batch of parameters.
 

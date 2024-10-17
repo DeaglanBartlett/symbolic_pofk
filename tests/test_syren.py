@@ -9,13 +9,13 @@ import scipy.special
 import symbolic_pofk.linear as linear
 import symbolic_pofk.syrenhalofit as syrenhalofit
 
-import symbolic_pofk.linear_plus as linear_plus
-import symbolic_pofk.syren_plus as syren_plus
+import symbolic_pofk.linear_new as linear_new
+import symbolic_pofk.syren_new as syren_new
 
 import symbolic_pofk.pytorch.linear as torch_linear
 import symbolic_pofk.pytorch.syrenhalofit as torch_syrenhalofit
-import symbolic_pofk.pytorch.linear_plus as torch_linear_plus
-import symbolic_pofk.pytorch.syren_plus as torch_syren_plus
+import symbolic_pofk.pytorch.linear_new as torch_linear_new
+import symbolic_pofk.pytorch.syren_new as torch_syren_new
 import symbolic_pofk.pytorch.utils as torch_utils
 
 
@@ -454,7 +454,7 @@ def test_utils_torch():
     return
   
   
-def test_syren_plus():
+def test_syren_new():
 
     # Define k range
     kmin = 9e-3
@@ -478,12 +478,12 @@ def test_syren_plus():
     a = 1 / (1+z)
     
     # Get sigma8 for this As
-    sigma8 = linear_plus.As_to_sigma8(As, Om, Ob, h, ns, mnu, w0, wa)
-    sigma8_max_prec = linear_plus.As_to_sigma8_max_precision(As, Om, Ob, h, ns, mnu, w0, wa)
+    sigma8 = linear_new.As_to_sigma8(As, Om, Ob, h, ns, mnu, w0, wa)
+    sigma8_max_prec = linear_new.As_to_sigma8_max_precision(As, Om, Ob, h, ns, mnu, w0, wa)
 
     # See what As you get in reverse
-    As_new = linear_plus.sigma8_to_As(sigma8, Om, Ob, h, ns, mnu, w0, wa)
-    As_new_max_prec = linear_plus.sigma8_to_As_max_precision(sigma8_max_prec, Om, Ob, h, ns, mnu, w0, wa)
+    As_new = linear_new.sigma8_to_As(sigma8, Om, Ob, h, ns, mnu, w0, wa)
+    As_new_max_prec = linear_new.sigma8_to_As_max_precision(sigma8_max_prec, Om, Ob, h, ns, mnu, w0, wa)
     assert math.isclose(As, As_new, rel_tol=1e-2)
     assert math.isclose(As, As_new_max_prec, rel_tol=1e-4)
     assert math.isclose(sigma8, sigma8_max_prec, rel_tol=1e-2)
@@ -523,11 +523,11 @@ def test_syren_plus():
     plin_camb = plin_camb[0]
 
     # Get emulated power spectrum
-    plin_syren_plus = linear_plus.plin_plus_emulated(
+    plin_syren_new = linear_new.plin_new_emulated(
         k, As, Om, Ob, h, ns, mnu, w0, wa, a=a)
 
     # Check that the linear emulator is close to camb
-    assert np.allclose(np.log(plin_camb), np.log(plin_syren_plus), atol=1e-2)
+    assert np.allclose(np.log(plin_camb), np.log(plin_syren_new), atol=1e-2)
 
     # Get camb halofit
     pars.NonLinear = camb.model.NonLinear_both
@@ -539,21 +539,21 @@ def test_syren_plus():
     pk_camb_halofit = pk_camb_halofit[0]
 
     # Get syren halofit
-    pk_syren_plus = syren_plus.pnl_plus_emulated(
+    pk_syren_new = syren_new.pnl_new_emulated(
         k, As, Om, Ob, h, ns, mnu, w0, wa, a)
 
     # Check that the emulator is close to camb
     assert np.allclose(np.log(pk_camb_halofit),
-                       np.log(pk_syren_plus), atol=1e-1)
+                       np.log(pk_syren_new), atol=1e-1)
 
     #  Check that the result at minimum k is close to linear
-    assert np.allclose(np.log(plin_syren_plus[0]), np.log(
-        pk_syren_plus[0]), atol=1e-2)
+    assert np.allclose(np.log(plin_syren_new[0]), np.log(
+        pk_syren_new[0]), atol=1e-2)
 
     return
 
 
-def test_torch_syren_plus():
+def test_torch_syren_new():
 
     # Define k range
     kmin = 9e-3
@@ -576,17 +576,17 @@ def test_torch_syren_plus():
     a = 1 / (1+z)
 
     # Get numpy versions
-    plin_numpy = linear_plus.plin_plus_emulated(
+    plin_numpy = linear_new.plin_new_emulated(
         k, As, Om, Ob, h, ns, mnu, w0, wa, a=a)
-    pnl_numpy = syren_plus.pnl_plus_emulated(
+    pnl_numpy = syren_new.pnl_new_emulated(
         k, As, Om, Ob, h, ns, mnu, w0, wa, a)
 
     # Get torch versions
     theta = torch.tensor([As, Om, Ob, h, ns, mnu, w0, wa, a],
                          requires_grad=True).reshape(1, -1)
     k = torch.tensor(k, requires_grad=True)
-    plin_torch = torch_linear_plus.plin_plus_emulated(k, theta)
-    pnl_torch = torch_syren_plus.pnl_plus_emulated(k, theta)
+    plin_torch = torch_linear_new.plin_new_emulated(k, theta)
+    pnl_torch = torch_syren_new.pnl_new_emulated(k, theta)
 
     # Check that the results are close
     assert np.allclose(np.log(plin_numpy), np.log(

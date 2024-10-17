@@ -1,8 +1,8 @@
 import numpy as np
-from .linear_plus import plin_plus_emulated
+from .linear_new import plin_new_emulated
 
 
-def pnl_plus_emulated(k, As, Om, Ob, h, ns, mnu, w0, wa, a):
+def pnl_new_emulated(k, As, Om, Ob, h, ns, mnu, w0, wa, a):
     """
     Compute the non-linear power spectrum using a symbolic approximation
     to the linear power spectrum. 
@@ -28,7 +28,7 @@ def pnl_plus_emulated(k, As, Om, Ob, h, ns, mnu, w0, wa, a):
                  1.4326, 1.8971, 0.0271, 0.9635, 0.0264, 22.9213, 71.1658, 0.0371, 0.0099, 210.3925, 0.2555])
 
     # calculate the linear power spectrum using the emulated model
-    P_lin = np.log10(plin_plus_emulated(k, As, Om, Ob, h, ns, mnu, w0, wa, a))
+    P_lin = np.log10(plin_new_emulated(k, As, Om, Ob, h, ns, mnu, w0, wa, a))
 
     term1 = P_lin
 

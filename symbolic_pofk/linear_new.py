@@ -404,7 +404,7 @@ def logF_fiducial(k, As, Om, Ob, h, ns, mnu, w0, wa):
     return logF
 
 
-def plin_plus_emulated(k, As, Om, Ob, h, ns, mnu, w0, wa, a=1):
+def plin_new_emulated(k, As, Om, Ob, h, ns, mnu, w0, wa, a=1):
     """
     Compute the emulated linear matter power spectrum by combining the Eisenstein & Hu model, an approximation for the growth factor D, 
     the fit from Bartlett et al. (2023), and corrections to both the present-day linear power spectrum and the growth factor.
