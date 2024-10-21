@@ -2,7 +2,7 @@
 
 [![arXiv](https://img.shields.io/badge/arXiv-2311.15865-b31b1b.svg)](https://arxiv.org/abs/2311.15865)
 [![arXiv](https://img.shields.io/badge/arXiv-2402.17492-b31b1b.svg)](https://arxiv.org/abs/2402.17492)
-[![arXiv](https://img.shields.io/badge/arXiv-2410.XXXXX-b31b1b.svg)](https://arxiv.org/abs/2410.XXXXX)
+[![arXiv](https://img.shields.io/badge/arXiv-2410.XXXXX-b31b1b.svg)](https://arxiv.org/abs/2410.14623)
 
 [![Coverage](https://img.shields.io/codecov/c/github/DeaglanBartlett/symbolic_pofk)](https://app.codecov.io/gh/DeaglanBartlett/symbolic_pofk)
 [![Build Status](https://github.com/DeaglanBartlett/symbolic_pofk/actions/workflows/build-linux.yml/badge.svg)](https://github.com/DeaglanBartlett/symbolic_pofk/actions/workflows/build-linux.yml)
@@ -17,10 +17,10 @@ easily copied, pasted and modified to the language of your choice.
 Please see 
 [Bartlett et al. 2023](https://arxiv.org/abs/2311.15865), 
 [Bartlett et al. 2024](https://arxiv.org/abs/2402.17492),
-and [Sui et al. 2024](https://arxiv.org/abs/2410.XXXXX)
+and [Sui et al. 2024](https://arxiv.org/abs/2410.14623)
 for further details.
 
-By default, outside the $k$ range tested in Bartlett et al. 2023, 
+By default, outside the k range tested in Bartlett et al. 2023, 
 we use the Eisenstein & Hu fit which includes baryons. This can be switched off by setting
 `extrapolate=False` in the functions `plin_emulated()`, `logF_max_precision()` and
 `logF_fiducial()`. 
@@ -52,7 +52,7 @@ We give an example for how to use the ΛCDM
 linear emulator in `examples/linear_example.py`.
 and the non-linear emulator in `examples/halofit_example.py`.
 And we show how to use the emulators for the extended cosmology
-(including neutrino masses, $w_0$ and $w_a$) in `examples/syren_new_example.ipynb`.
+(including neutrino masses, w0 and wa) in `examples/syren_new_example.ipynb`.
 
 The example `examples/fortran_example.py` shows how to run the
 fortran code with the python wrapper, and compares the difference
@@ -107,21 +107,21 @@ primaryClass = {astro-ph.CO},
 and if you use the extended cosmologies, please cite
 ```
 @ARTICLE{syren_new,
-     author = {{Sui}, C. and {Bartlett}, D.~J. and {Pandey}, S. and {Wandelt}, B.~D. 
-     and {Desmond}, H. and {Ferreira}, P.~G.},  
+     author = {{Sui}, C. and {Bartlett}, D.~J. and {Pandey}, S. 
+     and {Desmond}, H. and {Ferreira}, P.~G. and {Wandelt}, B.~D.},  
       title = "{syren-new: Precise formulae for the linear and nonlinear matter power spectra 
       with massive neutrinos and dynamical dark energy}",
     journal = {arXiv e-prints},
    keywords = {Astrophysics - Cosmology and Nongalactic Astrophysics},
        year = 2024,
       month = oct,
-        eid = {arXiv:2410.XXXXX},
-      pages = {arXiv:2410.XXXXX},
-        doi = {10.48550/arXiv.2410.XXXXX},
+        eid = {arXiv:2410.14623},
+      pages = {arXiv:2410.14623},
+        doi = {10.48550/2410.14623},
 archivePrefix = {arXiv},
-     eprint = {2410.XXXXX},
+     eprint = {2410.14623},
 primaryClass = {astro-ph.CO},
-        url = {https://arxiv.org/abs/2410.XXXXX},
+        url = {https://arxiv.org/abs/2410.14623},
 }
 ```
 
