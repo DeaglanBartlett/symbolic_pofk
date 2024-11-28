@@ -107,7 +107,10 @@ fig.savefig('planck_2018_comparison.png', bbox_inches='tight')
 fig2, ax2 = plt.subplots(1, 1, figsize=(7, 4))
 frac_error = np.abs((np.sqrt(pk_camb) - np.sqrt(pk_fid)) /
                     np.sqrt(pk_camb)) * 100
-ax2.semilogx(k, frac_error, label='Bartlett et al. 2023', color=cmap(2))
+ax2.semilogx(k, frac_error, label='Fiducial (Bartlett et al. 2023)', color=cmap(2))
+frac_error = np.abs((np.sqrt(pk_camb) - np.sqrt(pk_prec)) /
+                    np.sqrt(pk_camb)) * 100
+ax2.semilogx(k, frac_error, label='Max precision (Bartlett et al. 2023)', color=cmap(3))
 ax2.legend()
 for y in [0.5, 1.0, 1.5]:
     ax2.axhline(y, color='k', ls='--')

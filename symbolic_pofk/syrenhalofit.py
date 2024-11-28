@@ -145,7 +145,7 @@ def A_emulated(k, sigma8, Om, Ob, h, ns, a, ksigma=None, neff=None, C=None):
     return A
 
 
-def run_halofit(k, sigma8, Om, Ob, h, ns, a, emulator='fiducial', extrapolate=True, which_params='Bartlett', add_correction=True):
+def run_halofit(k, sigma8, Om, Ob, h, ns, a, emulator='fiducial', extrapolate=False, which_params='Bartlett', add_correction=True):
     """
     Compute the non-linear power spectrum using halofit and a symbolic approximation
     to the linear power spectrum. The model sr-halofit of Bartlett et al. 2024 is
@@ -165,7 +165,9 @@ def run_halofit(k, sigma8, Om, Ob, h, ns, a, emulator='fiducial', extrapolate=Tr
             uses the most precise one.
         :extrapolate (bool, default=False): If using the Bartlett et al. 2023 linear
             fit, then if true we extrapolate outside range tested in paper. Otherwise,
-            we use the E&H with baryons fit for this regime
+            we use the E&H with baryons fit for this regime. Due to problems with the Colossus
+            Eisenstein & Hu fit on large scales (typically a 2 percent offset), it is
+            strongly recommended to use extrapolate=False.
         :which_params (str, default='Bartlett'): Which halofit parameters to use.
             Currently available: 'Takahashi' uses those from Takahashi et al. 2012, or
             'Bartlett' uses those from Bartlett et al. 2024.
