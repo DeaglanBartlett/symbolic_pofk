@@ -183,7 +183,9 @@ def logF_fiducial(k, sigma8, Om, Ob, h, ns, extrapolate=False, kmin=9.e-3, kmax=
         :ns (float): Spectral tilt of primordial power spectrum
         :extrapolate (bool, default=False): If True, then extrapolates the Bartlett
             et al. 2023 fit outside range tested in paper. Otherwise, uses E&H with
-            baryons for k < kmin and k > kmax
+            baryons for k < kmin and k > kmax. Due to problems with the Colossus
+            Eisenstein & Hu fit on large scales (typically a 2 percent offset), it is
+            strongly recommended to use extrapolate=False.
         :kmin (float, default=9.e-3): Minimum k value to use Bartlett et al. formula
             if extrapolate=False
         :kmax (float, default=9): Maximum k value to use Bartlett et al. formula
@@ -238,6 +240,10 @@ def logF_fiducial(k, sigma8, Om, Ob, h, ns, extrapolate=False, kmin=9.e-3, kmax=
             pk_EisensteinHu_zb(k[m], sigma8, Om, Ob, h, ns, integral_norm=False) /
             pk_EisensteinHu_zb(k[m], sigma8, Om, Ob, h, ns, integral_norm=True)
         )
+    elif m.sum() > 0:
+        warnings.warn(
+            "Using Bartlett et al. formula outside tested regime. Due to problems with the Colossus Eisenstein & Hu fit on \
+                large scales (typically a 2 percent offset), it is strongly recommended to use extrapolate=False.")
 
     return logF
 
@@ -258,7 +264,9 @@ def logF_max_precision(k, sigma8, Om, Ob, h, ns, extrapolate=False, kmin=9.e-3, 
         :ns (float): Spectral tilt of primordial power spectrum
         :extrapolate (bool, default=False): If True, then extrapolates the Bartlett
             et al. 2023 fit outside range tested in paper. Otherwise, uses E&H with
-            baryons for k < kmin and k > kmax
+            baryons for k < kmin and k > kmax. Due to problems with the Colossus
+            Eisenstein & Hu fit on large scales (typically a 2 percent offset), it is
+            strongly recommended to use extrapolate=False.
         :kmin (float, default=9.e-3): Minimum k value to use Bartlett et al. formula
             if extrapolate=False
         :kmax (float, default=9): Maximum k value to use Bartlett et al. formula
@@ -338,7 +346,9 @@ def plin_emulated(k, sigma8, Om, Ob, h, ns, a=1, emulator='fiducial',
             most precise one.
         :extrapolate (bool, default=False): If using the Bartlett et al. 2023 fit, then
             if true we extrapolate outside range tested in paper. Otherwise, uses E&H with
-            baryons for k < kmin and k > kmax
+            baryons for k < kmin and k > kmax. Due to problems with the Colossus
+            Eisenstein & Hu fit on large scales (typically a 2 percent offset), it is
+            strongly recommended to use extrapolate=False.
         :kmin (float, default=9.e-3): Minimum k value to use Bartlett et al. formula
             if extrapolate=False
         :kmax (float, default=9): Maximum k value to use Bartlett et al. formula
