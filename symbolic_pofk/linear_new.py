@@ -1,6 +1,6 @@
 import numpy as np
 from .linear import logF_fiducial as lcdm_logF_fiducial
-
+import warnings
 
 def As_to_sigma8(As, Om, Ob, h, ns, mnu, w0, wa):
     """
@@ -399,7 +399,9 @@ def logF_fiducial(k, As, Om, Ob, h, ns, mnu, w0, wa):
     """
 
     sigma8 = None  # not needed in logF_fiducial
-    logF = lcdm_logF_fiducial(k, sigma8, Om, Ob, h, ns, extrapolate=True)
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore")
+        logF = lcdm_logF_fiducial(k, sigma8, Om, Ob, h, ns, extrapolate=True)
 
     return logF
 
