@@ -3,26 +3,31 @@ import torch
 # Check if a GPU is available and set the device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-def syren_baryon_Astrid(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
+def S_Astrid(k, theta_batch):
     """"
     Compute the impact of baryonic physics on the matter power spectrum.
 
     The explanation of astrophysical parameters was taken from https://camels.readthedocs.io/en/latest/parameters.html
 
     Args:
-        :k (Union[float, np.ndarray]): Wavenumber in unit k / h Mpc-1
-        :z (Union[float, np.ndarray]): Redshift
-        :Omega_m (Union[float, np.ndarray]): Density of matter.
-        :sigma_8 (Union[float, np.ndarray]): Amplitude of matter fluctuations
-        :A_SN1 (Union[float, np.ndarray]): Energy per SFR of the galactic winds
-        :A_AGN1 (Union[float, np.ndarray]): Energy per black-hole accretion rate of the kinetic black-hole feedback
-        :A_SN2 (Union[float, np.ndarray]): Wind speed of the galactic winds
-        :A_AGN2 (Union[float, np.ndarray]): Energy per unit black-hole accretion rate of the thermal model of the black-hole feedback
+        :k (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
+        :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 7),
+            the 7 parameters are :
+                a : Scale factor, a = 1/(1+z)
+                Omega_m : Density of matter.
+                sigma_8 : Amplitude of matter fluctuations
+                A_SN1 : Energy per SFR of the galactic winds
+                A_AGN1 : Energy per black-hole accretion rate of the kinetic black-hole feedback
+                A_SN2 : Wind speed of the galactic winds
+                A_AGN2 : Energy per unit black-hole accretion rate of the thermal model of the black-hole feedback
 
     Returns:
-        :S (Union[float, np.ndarray)): Baryonic suppression of the matter power spectrum
+        :S (torch.Tensor): Baryonic suppression of the matter power spectrum
     """
+
+    a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2 = theta_batch.unbind(dim=1)
     
+    z = 1/a - 1
     alpha_1 = 7.9*A_SN2/Omega_m
     alpha_2 = 0.0014
     alpha_3 = 0.937*A_SN2
@@ -40,26 +45,31 @@ def syren_baryon_Astrid(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
     return s
     
 
-def syren_baryon_IllustrisTNG(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
+def S_IllustrisTNG(k, theta_batch):
     """"
     Compute the impact of baryonic physics on the matter power spectrum.
 
     The explanation of astrophysical parameters was taken from https://camels.readthedocs.io/en/latest/parameters.html
 
     Args:
-        :k (Union[float, np.ndarray]): Wavenumber in unit h Mpc-1
-        :z (Union[float, np.ndarray]): Redshift
-        :Omega_m (Union[float, np.ndarray]): Density of matter.
-        :sigma_8 (Union[float, np.ndarray]): Amplitude of matter fluctuations
-        :A_SN1 (Union[float, np.ndarray]): Energy per unit SFR of the galactic winds
-        :A_AGN1 (Union[float, np.ndarray]): Energy per unit blach-hole accretion rate, not used in the model, only here for consistency with other simulators.
-        :A_SN2 (Union[float, np.ndarray]): Wind speed of the galactic winds
-        :A_AGN2 (Union[float, np.ndarray]): Ejection speed/burstiness of the kinetic mode of the black-hole feedback
+        :k (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
+        :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 7),
+            the 7 parameters are :
+                a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
+                Omega_m : Density of matter.
+                sigma_8 : Amplitude of matter fluctuations
+                A_SN1 : Energy per unit SFR of the galactic winds
+                A_AGN1 : Energy per unit blach-hole accretion rate, not used in the model, only here for consistency with other simulators.
+                A_SN2 : Wind speed of the galactic winds
+                A_AGN2 : Ejection speed/burstiness of the kinetic mode of the black-hole feedback
 
     Returns:
-        :S (Union[float, np.ndarray)): Baryonic suppression of the matter power spectrum
+        :S (torch.Tensor): Baryonic suppression of the matter power spectrum
     """
+
+    a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2 = theta_batch.unbind(dim=1)
     
+    z = 1/a - 1
     alpha_1 = 0.0109*A_SN2/Omega_m
     alpha_2 = 3592.322*Omega_m
     alpha_3 = 0.0087
@@ -76,26 +86,31 @@ def syren_baryon_IllustrisTNG(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AG
     return s
     
 
-def syren_baryon_SIMBA(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
+def S_SIMBA(k, theta_batch):
     """"
     Compute the impact of baryonic physics on the matter power spectrum.
 
     The explanation of astrophysical parameters was taken from https://camels.readthedocs.io/en/latest/parameters.html
 
     Args:
-        :k (Union[float, np.ndarray]): Wavenumber in unit h Mpc-1
-        :z (Union[float, np.ndarray]): Redshift
-        :Omega_m (Union[float, np.ndarray]): Density of matter.
-        :sigma_8 (Union[float, np.ndarray]): Amplitude of matter fluctuations
-        :A_SN1 (Union[float, np.ndarray]): Mass loading of the galactic winds
-        :A_AGN1 (Union[float, np.ndarray]): Momentum flux of the QSO & jet-mode black-hole feedback
-        :A_SN2 (Union[float, np.ndarray]): Wind speed of the galactic winds
-        :A_AGN2 (Union[float, np.ndarray]): Jet speed of the jet-mode black-hole feedback
+        :k (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
+        :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 7),
+            the 7 parameters are :
+                a : Scale factor, a = 1/(1+z)
+                Omega_m : Density of matter.
+                sigma_8 : Amplitude of matter fluctuations
+                A_SN1 : Mass loading of the galactic winds
+                A_AGN1 : Momentum flux of the QSO & jet-mode black-hole feedback
+                A_SN2 : Wind speed of the galactic winds
+                A_AGN2 : Jet speed of the jet-mode black-hole feedback
 
     Returns:
-        :S (Union[float, np.ndarray)): Baryonic suppression of the matter power spectrum
+        :S (torch.Tensor): Baryonic suppression of the matter power spectrum
     """
     
+    a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2 = theta_batch.unbind(dim=1)
+
+    z = 1/a - 1
     alpha_1 = 0.00133/Omega_m**2
     alpha_2 = Omega_m*(25.727*A_AGN1 + 153.382*A_AGN2 - 70.6364*A_SN1 + 260.812*sigma_8)
     alpha_3 = 0.0553
@@ -113,26 +128,31 @@ def syren_baryon_SIMBA(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
     return s
     
 
-def syren_baryon_Swift_EAGLE(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
+def S_Swift_EAGLE(k, theta_batch):
     """"
     Compute the impact of baryonic physics on the matter power spectrum.
 
     The explanation of astrophysical parameters was taken from https://camels.readthedocs.io/en/latest/parameters.html
 
     Args:
-        :k (Union[float, np.ndarray]): Wavenumber in unit h Mpc-1
-        :z (Union[float, np.ndarray]): Redshift
-        :Omega_m (Union[float, np.ndarray]): Density of matter.
-        :sigma_8 (Union[float, np.ndarray]): amplitude of matter fluctuations
-        :A_SN1 (Union[float, np.ndarray]): Thermal energy injected in each SNII event
-        :A_AGN1 (Union[float, np.ndarray]): Scaling of the black hole Bondi accretion rate
-        :A_SN2 (Union[float, np.ndarray]): Metallicity dependence of the stellar feedback fraction per unit stellar mass
-        :A_AGN2 (Union[float, np.ndarray]): Temperature jump of gas particles in AGN feedback events
+        :k (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
+        :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 7),
+            the 7 parameters are:
+                a : Scale factor, a = 1/(1+z)
+                Omega_m : Density of matter.
+                sigma_8 : amplitude of matter fluctuations
+                A_SN1 : Thermal energy injected in each SNII event
+                A_AGN1 : Scaling of the black hole Bondi accretion rate
+                A_SN2 : Metallicity dependence of the stellar feedback fraction per unit stellar mass
+                A_AGN2 : Temperature jump of gas particles in AGN feedback events
 
     Returns:
-        :S (Union[float, np.ndarray)): Baryonic suppression of the matter power spectrum
+        :S (torch.Tensor): Baryonic suppression of the matter power spectrum
     """
+
+    a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2 = theta_batch.unbind(dim=1)
     
+    z = 1/a - 1
     alpha_1 = 0.272*Omega_m
     alpha_2 = 0.22
     alpha_3 = 0.0168
@@ -156,29 +176,71 @@ def syren_baryon_Swift_EAGLE(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN
     return s
     
 
-def syren_baryon_Baryonification(k, z, sigma8, Om, Ob, logMc, logeta, logbeta, logM1, logMinn, logthetainn):
+# Dictionary of available functions
+function_map = {
+    'Astrid': S_Astrid,
+    'IllustrisTNG': S_IllustrisTNG,
+    'SIMBA': S_SIMBA,
+    'Swift-EAGLE': S_Swift_EAGLE,
+}
+
+
+def S_hydro(k, theta_batch, hydro_model):
+    """
+    Compute the impact of baryonic physics on the matter power spectrum for a given hydro model.
+    This is given by the ratio of the baryonic to non-baryonic power spectrum at ks provided.
+
+    Args:
+        :k (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
+        :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 7),
+            the 7 parameters are:
+                a : Scale factor, a = 1/(1+z)
+                Omega_m : Density of matter.
+                sigma_8 : Amplitude of matter fluctuations
+                A_SN1 : First supernova feedback parameter (see specific hydro model for details)
+                A_SN2 : Second supernova feedback parameter (see specific hydro model for details)
+                A_AGN1 : First AGN feedback parameter (see specific hydro model for details)
+                A_AGN2 : Second AGN feedback parameter (see specific hydro model for details)
+        :hydro_model (str): Name of the hydro model to use ('Astrid', 'IllustrisTNG', 'SIMBA', 'Swift-EAGLE')
+
+    Returns:
+        :S (torch.Tensor): Baryonic suppression of the matter power spectrum
+    """
+    
+    if hydro_model not in function_map:
+        raise ValueError(f"Hydro model '{hydro_model}' is not supported. Available models: {list(function_map.keys())}")
+
+    return function_map[hydro_model](k, theta_batch)
+
+
+def S_baryonification(k, theta_batch,):
     """"
     Compute nonlinear P(k) for the cosmology of interest
 
-    Args:
-        :k (Union[float, np.ndarray]): k values to evaluate P(k) at [h / Mpc]
-        :z (Union[float, np.ndarray]): Redshift.
-        :sigma8 (Union[float, np.ndarray]): Root-mean-square density fluctuation when the linearly
-            evolved field is smoothed with a top-hat filter of radius 8 Mpc/h
-        :Om (Union[float, np.ndarray]): The z=0 total matter density parameter, Omega_m
-        :Ob (Union[float, np.ndarray]): The z=0 baryonic density parameter, Omega_b
-        :logMc (Union[float, np.ndarray]): (Log of) mass fraction of hot gas in haloes
-        :logeta (Union[float, np.ndarray]): (Log of) extent of ejected gas
-        :logbeta (Union[float, np.ndarray]): (Log of) mass fraction of hot gas in haloes
-        :logM1 (Union[float, np.ndarray]): (Log of) characteristic halo mass scale for central galaxy
-        :logMinn (Union[float, np.ndarray]): (Log of) property describing density profile of hot gas in haloes
-        :logthetainn (Union[float, np.ndarray]): (Log of) property describing density profile of hot gas in haloes
+     Args:
+        :k (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
+        :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 10),
+            the 10 parameters are:
+                a : Scale factor, a = 1/(1+z)
+                sigma8 : Root-mean-square density fluctuation when the linearly
+                    evolved field is smoothed with a top-hat filter of radius 8 Mpc/h
+                Om : The z=0 total matter density parameter, Omega_m
+                Ob : The z=0 baryonic density parameter, Omega_b
+                logMc : (Log of) mass fraction of hot gas in haloes
+                logeta : (Log of) extent of ejected gas
+                logbeta : (Log of) mass fraction of hot gas in haloes
+                logM1 : (Log of) characteristic halo mass scale for central galaxy
+                logMinn : (Log of) property describing density profile of hot gas in haloes
+                logthetainn : (Log of) property describing density profile of hot gas in haloes
     
     Returns:
-        :S (np.ndarray): Ratio of baryonic to non-baryonic power spectrum at ks provided.
+        :S (torch.Tensor): Ratio of baryonic to non-baryonic power spectrum at ks provided.
 
     """
     
+    a, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn = theta_batch.unbind(dim=1)
+
+    z = 1/a - 1
     alpha_1 = 2.4663*(5.823*Ob)**(3.23*Om)
     alpha_2 = 5.823*Ob
     alpha_3 = 0.4355
@@ -196,18 +258,21 @@ def syren_baryon_Baryonification(k, z, sigma8, Om, Ob, logMc, logeta, logbeta, l
     return s
     
 
-def epsilon_Astrid(k, z):
+# SORT FROM HERE
+
+def epsilon_Astrid(k, a):
     """
     Calculate the typical error of the prediction of `Astrid`.
 
     Args:
         :k (Union[float, np.ndarray]): k values to evaluate P(k) at [h / Mpc]
-        :z (Union[float, np.ndarray]): Redshift.
+        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
 
     Returns:
         :epsilon (Union[float, np.ndarray]): Covariance of the prediction and the actual S of Astrid.
     """
 
+    z = 1/a - 1
     alpha_1 = 0.0202
     alpha_2 = 0.18327
     alpha_3 = 1.3
@@ -217,18 +282,19 @@ def epsilon_Astrid(k, z):
     return epsilon
     
 
-def epsilon_IllustrisTNG(k, z):
+def epsilon_IllustrisTNG(k, a):
     """
     Calculate the typical error of the prediction of `IllustrisTNG`.
 
     Args:
         :k (Union[float, np.ndarray]): k values to evaluate P(k) at [h / Mpc]
-        :z (Union[float, np.ndarray]): Redshift.
+        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
 
     Returns:
         :epsilon (Union[float, np.ndarray]): Covariance of the prediction and the actual S of IllustrisTNG.
     """
 
+    z = 1/a - 1
     alpha_1 = 17.119
     alpha_2 = 0.63
     alpha_3 = 48.797
@@ -238,18 +304,19 @@ def epsilon_IllustrisTNG(k, z):
     return epsilon
     
 
-def epsilon_SIMBA(k, z):
+def epsilon_SIMBA(k, a):
     """
     Calculate the typical error of the prediction of `SIMBA`.
 
     Args:
         :k (Union[float, np.ndarray]): k values to evaluate P(k) at [h / Mpc]
-        :z (Union[float, np.ndarray]): Redshift.
+        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
 
     Returns:
         :epsilon (Union[float, np.ndarray]): Covariance of the prediction and the actual S of SIMBA.
     """
 
+    z = 1/a - 1
     alpha_1 = 0.05904
     alpha_2 = 0.43
     alpha_3 = 0.63239
@@ -259,22 +326,49 @@ def epsilon_SIMBA(k, z):
     return epsilon
     
 
-def epsilon_Swift_EAGLE(k, z):
+def epsilon_Swift_EAGLE(k, a):
     """
     Calculate the typical error of the prediction of `Swift_EAGLE`.
 
     Args:
         :k (Union[float, np.ndarray]): k values to evaluate P(k) at [h / Mpc]
-        :z (Union[float, np.ndarray]): Redshift.
+        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
 
     Returns:
         :epsilon (Union[float, np.ndarray]): Covariance of the prediction and the actual S of Swift-EAGLE.
     """
 
+    z = 1/a - 1
     alpha_1 = 0.032
     alpha_2 = 0.54
     alpha_3 = 0.363
     epsilon = alpha_1*k/(alpha_2*k + torch.exp(alpha_3*z))
 
     return epsilon
+
+
+epsilon_map = {
+    'Astrid': epsilon_Astrid,
+    'IllustrisTNG': epsilon_IllustrisTNG,
+    'SIMBA': epsilon_SIMBA,
+    'Swift-EAGLE': epsilon_Swift_EAGLE,
+}
+
+def epsilon_hydro(k, a, hydro_model):
+    """
+    Calculate the typical error of the prediction for a given hydro model.
+
+    Args:
+        :k (Union[float, np.ndarray]): k values to evaluate P(k) at [h / Mpc]
+        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
+        :hydro_model (str): Name of the hydro model to use ('Astrid', 'IllustrisTNG', 'SIMBA', 'Swift-EAGLE')
+
+    Returns:
+        :epsilon (Union[float, np.ndarray]): Covariance of the prediction and the actual S.
+    """
+    
+    if hydro_model not in epsilon_map:
+        raise ValueError(f"Hydro model '{hydro_model}' is not supported. Available models: {list(epsilon_map.keys())}")
+
+    return epsilon_map[hydro_model](k, a)
     

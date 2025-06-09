@@ -18,6 +18,7 @@ import symbolic_pofk.pytorch.syrenhalofit as torch_syrenhalofit
 import symbolic_pofk.pytorch.linear_new as torch_linear_new
 import symbolic_pofk.pytorch.syren_new as torch_syren_new
 import symbolic_pofk.pytorch.utils as torch_utils
+import symbolic_pofk.pytorch.syren_baryon as torch_syren_baryon
 
 
 def test_lcdm():
@@ -616,7 +617,7 @@ def test_syren_baryon():
     z_high = 127
 
     a = 1 / (1 + z)
-    a_high = 1 / (1 + z_high)
+    a_high = 1 / (1 + z_high)    
 
     # Get the baryon correction
     for model in ['Astrid', 'SIMBA', 'IllustrisTNG', 'Swift-EAGLE']:
@@ -681,9 +682,135 @@ def test_syren_baryon():
     assert np.allclose(S_baryon[0], 1, atol=1e-3), \
         "S_baryon at large scales for baryonification is not close to 1"
     # Check that the baryon correction is close to 1 at high z
-    assert np.allclose(S_baryon_high[0], 1, atol=1e-3), \
+    assert np.allclose(S_baryon_high, 1, atol=1e-3), \
         "S_baryon at high z for baryonification is not close to 1"
     
+
+    return
+
+
+def test_syren_baryon_torch():
+
+    kmin = 1e-4
+    kmax = 9
+    nk = 400
+    k = np.logspace(np.log10(kmin), np.log10(kmax), nk)
+    kt = torch.tensor(k, requires_grad=True)
+
+    # Parameters to try
+    sigma8 = 0.8
+    Om = 0.3
+    A_SN1 = 1
+    A_SN2 = 1
+    A_AGN1 = 1
+    A_AGN2 = 1
+    z = 0.0
+    z_high = 127
+
+    a = 1 / (1 + z)
+    a_high = 1 / (1 + z_high)
+
+    theta = torch.tensor([a, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2,],
+                        requires_grad=True).reshape(1, -1)
+    theta_high = torch.tensor([a_high, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2,],
+                        requires_grad=True).reshape(1, -1)
+
+    # Get the baryon correction
+    for model in ['Astrid', 'SIMBA', 'IllustrisTNG', 'Swift-EAGLE']:
+        S_baryon_np = syren_baryon.S_hydro(
+            k, a, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, model)
+        # epsilon_baryon_np = syren_baryon.epsilon_hydro(k, a, model)
+        S_baryon = torch_syren_baryon.S_hydro(
+            kt, theta, model)
+        # epsilon_baryon = syren_baryon.epsilon_hydro(kt, a, model)
+        assert isinstance(S_baryon, torch.Tensor)
+        assert len(S_baryon) == len(k)
+        assert np.all(np.isfinite(S_baryon.detach().numpy())), "S_baryon contains non-finite values"
+        assert np.all(S_baryon.detach().numpy() >= 0), "S_baryon contains negative values"
+        # assert isinstance(epsilon_baryon, np.ndarray)
+        # assert len(epsilon_baryon) == len(k)
+        # assert np.all(np.isfinite(epsilon_baryon)), "epsilon_baryon contains non-finite values"
+        # assert np.all(epsilon_baryon >= 0), "epsilon_baryon contains negative values"
+
+        # Check close valyes
+        assert np.allclose(S_baryon.detach().numpy(), S_baryon_np, atol=1e-6), \
+            f"S_baryon for {model} does not match numpy version"
+        # assert np.allclose(epsilon_baryon, epsilon_baryon_np, atol=1e-6), \
+        #     f"epsilon_baryon for {model} does not match numpy version"
+
+        # Check that the baryon correction is close to 1 at large scales
+        assert np.allclose(S_baryon.detach().numpy()[0], 1, atol=1e-3), \
+            f"S_baryon at large scales for {model} is not close to 1"
+    
+        # Check that the epsilon_baryon is close to 0 at large scales
+        # assert np.allclose(epsilon_baryon[0], 0, atol=1e-3), \
+        #     f"epsilon_baryon at large scales for {model} is not close to 0"
+        
+        # Check that baryon correct all close to 1 at high z
+        S_baryon_high_np = syren_baryon.S_hydro(
+            k, a_high, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, model)
+        # epsilon_baryon_high_np = syren_baryon.epsilon_hydro(k, a_high, model)
+        S_baryon_high = torch_syren_baryon.S_hydro(
+            kt, theta_high, model)
+        # epsilon_baryon_high = torch_syren_baryon.epsilon_hydro(kt, a_high, model)
+        assert np.allclose(S_baryon_high.detach().numpy(), 1, atol=1e-3), \
+            f"S_baryon at high z for {model} is not close to 1"
+        # assert np.allclose(epsilon_baryon_high, 0, atol=5e-3), \
+        #     f"epsilon_baryon at high z for {model} is not close to 0"
+        
+        # Check that the torch version is close to the numpy version
+        assert np.allclose(S_baryon_high.detach().numpy(), S_baryon_high_np, atol=1e-6), \
+            f"S_baryon_high for {model} does not match numpy version"
+        # assert np.allclose(epsilon_baryon_high, epsilon_baryon_high_np, atol=1e-6), \
+        #     f"epsilon_baryon_high for {model} does not match numpy version"
+                
+    # Check that a wrong model raises an error
+    with unittest.TestCase().assertRaises(ValueError):
+        torch_syren_baryon.S_hydro(k, theta, 'wrong_model')
+    # with unittest.TestCase().assertRaises(ValueError):
+    #     torch_syren_baryon.epsilon_hydro(k, a, 'wrong_model')
+        
+    # Now consider baryonification model
+    sigma8 = 0.834
+    Om = 0.3175
+    Ob = 0.049
+    logMc = 12.0
+    logeta = -0.3
+    logbeta = -0.22
+    logM1 = 10.5
+    logMinn = 13.4
+    logthetainn = -0.86
+
+    theta = torch.tensor([a, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn],
+                         requires_grad=True).reshape(1, -1)
+    theta_high = torch.tensor([a_high, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn],
+                         requires_grad=True).reshape(1, -1)
+    
+    S_baryon = torch_syren_baryon.S_baryonification(kt, theta)
+    S_baryon_high = torch_syren_baryon.S_baryonification(kt, theta_high)
+    S_baryon_np = syren_baryon.S_baryonification(k, a, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn)
+    S_baryon_high_np = syren_baryon.S_baryonification(k, a_high, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn)
+
+    assert isinstance(S_baryon, torch.Tensor)
+    assert len(S_baryon) == len(k)
+    assert np.all(np.isfinite(S_baryon.detach().numpy())), "S_baryon contains non-finite values"
+    assert np.all(S_baryon.detach().numpy() >= 0), "S_baryon contains negative values"
+    assert isinstance(S_baryon_high, torch.Tensor)
+    assert len(S_baryon_high) == len(k)
+    assert np.all(np.isfinite(S_baryon_high.detach().numpy())), "S_baryon_high contains non-finite values"
+    assert np.all(S_baryon_high.detach().numpy() >= 0), "S_baryon_high contains negative values"
+    # Check that the baryon correction is close to 1 at large scales
+    assert np.allclose(S_baryon.detach().numpy()[0], 1, atol=1e-3), \
+        "S_baryon at large scales for baryonification is not close to 1"
+    # Check that the baryon correction is close to 1 at high z
+    assert np.allclose(S_baryon_high.detach().numpy(), 1, atol=1e-3), \
+        "S_baryon at high z for baryonification is not close to 1"
+    
+    # Check that the torch version is close to the numpy version
+    assert np.allclose(S_baryon.detach().numpy(), S_baryon_np, atol=1e-6), \
+        "S_baryon for baryonification does not match numpy version"
+    assert np.allclose(S_baryon_high.detach().numpy(), S_baryon_high_np, atol=1e-6), \
+        "S_baryon_high for baryonification does not match numpy version"
 
     return
 
