@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def syren_baryon_Astrid(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
+def S_Astrid(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
     """"
     Compute the impact of baryonic physics on the matter power spectrum.
 
@@ -38,7 +38,7 @@ def syren_baryon_Astrid(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
     return s
     
 
-def syren_baryon_IllustrisTNG(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
+def S_IllustrisTNG(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
     """"
     Compute the impact of baryonic physics on the matter power spectrum.
 
@@ -74,7 +74,7 @@ def syren_baryon_IllustrisTNG(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AG
     return s
     
 
-def syren_baryon_SIMBA(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
+def S_SIMBA(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
     """"
     Compute the impact of baryonic physics on the matter power spectrum.
 
@@ -111,7 +111,7 @@ def syren_baryon_SIMBA(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
     return s
     
 
-def syren_baryon_Swift_EAGLE(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
+def S_Swift_EAGLE(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
     """"
     Compute the impact of baryonic physics on the matter power spectrum.
 
@@ -152,25 +152,61 @@ def syren_baryon_Swift_EAGLE(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN
     s = np.exp(log_s)
 
     return s
+
+
+# Dictionary of available functions
+function_map = {
+    'Astrid': S_Astrid,
+    'IllustrisTNG': S_IllustrisTNG,
+    'SIMBA': S_SIMBA,
+    'Swift-EAGLE': S_Swift_EAGLE,
+}
+
+
+def S_hydro(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2, hydro_model):
+    """
+    Compute the impact of baryonic physics on the matter power spectrum for a given hydro model.
+    This is given by the ratio of the baryonic to non-baryonic power spectrum at ks provided.
+
+    Args:
+        :k (Union[float, np.ndarray]): Wavenumber in unit h Mpc-1
+        :z (Union[float, np.ndarray]): Redshift
+        :Omega_m (Union[float, np.ndarray]): Density of matter.
+        :sigma_8 (Union[float, np.ndarray]): Amplitude of matter fluctuations
+        :A_SN1 (Union[float, np.ndarray]): First supernova feedback parameter (see specific hydro model for details)
+        :A_SN2 (Union[float, np.ndarray]): Second supernova feedback parameter (see specific hydro model for details)
+        :A_AGN1 (Union[float, np.ndarray]): First AGN feedback parameter (see specific hydro model for details)
+        :A_AGN2 (Union[float, np.ndarray]): Second AGN feedback parameter (see specific hydro model for details)
+        :hydro_model (str): Name of the hydro model to use ('Astrid', 'IllustrisTNG', 'SIMBA', 'Swift-EAGLE')
+
+    Returns:
+        :S (Union[float, np.ndarray]): Baryonic suppression of the matter power spectrum
+    """
+    
+    if hydro_model not in function_map:
+        raise ValueError(f"Hydro model '{hydro_model}' is not supported. Available models: {list(function_map.keys())}")
+
+    return function_map[hydro_model](k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2)
+
     
 
-def syren_baryon_Baryonification(k, z, sigma8, Om, Ob, logMc, logeta, logbeta, logM1, logMinn, logthetainn):
+def S_baryonification(k, z, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn):
     """"
     Compute nonlinear P(k) for the cosmology of interest
 
     Args:
         :k (Union[float, np.ndarray]): k values to evaluate P(k) at [h / Mpc]
         :z (Union[float, np.ndarray]): Redshift.
-        :sigma8 (Union[float, np.ndarray]): Root-mean-square density fluctuation when the linearly
-            evolved field is smoothed with a top-hat filter of radius 8 Mpc/h
         :Om (Union[float, np.ndarray]): The z=0 total matter density parameter, Omega_m
         :Ob (Union[float, np.ndarray]): The z=0 baryonic density parameter, Omega_b
-        :logMc (Union[float, np.ndarray]): (Log of) mass fraction of hot gas in haloes
-        :logeta (Union[float, np.ndarray]): (Log of) extent of ejected gas
-        :logbeta (Union[float, np.ndarray]): (Log of) mass fraction of hot gas in haloes
-        :logM1 (Union[float, np.ndarray]): (Log of) characteristic halo mass scale for central galaxy
-        :logMinn (Union[float, np.ndarray]): (Log of) property describing density profile of hot gas in haloes
-        :logthetainn (Union[float, np.ndarray]): (Log of) property describing density profile of hot gas in haloes
+        :sigma8 (Union[float, np.ndarray]): Root-mean-square density fluctuation when the linearly
+            evolved field is smoothed with a top-hat filter of radius 8 Mpc/h
+        :logMc (Union[float, np.ndarray]): (Log10 of) mass fraction of hot gas in haloes
+        :logeta (Union[float, np.ndarray]): (Log10 of) extent of ejected gas
+        :logbeta (Union[float, np.ndarray]): (Log10 of) mass fraction of hot gas in haloes
+        :logM1 (Union[float, np.ndarray]): (Log10 of) characteristic halo mass scale for central galaxy
+        :logMinn (Union[float, np.ndarray]): (Log10 of) property describing density profile of hot gas in haloes
+        :logthetainn (Union[float, np.ndarray]): (Log10 of) property describing density profile of hot gas in haloes
     
     Returns:
         :S (np.ndarray): Ratio of baryonic to non-baryonic power spectrum at ks provided.
@@ -275,4 +311,29 @@ def epsilon_Swift_EAGLE(k, z):
     epsilon = alpha_1*k/(alpha_2*k + np.exp(alpha_3*z))
 
     return epsilon
+
+
+epsilon_map = {
+    'Astrid': epsilon_Astrid,
+    'IllustrisTNG': epsilon_IllustrisTNG,
+    'SIMBA': epsilon_SIMBA,
+    'Swift-EAGLE': epsilon_Swift_EAGLE,
+}
+
+def epsilon_hydro(k, z, hydro_model):
+    """
+    Calculate the typical error of the prediction for a given hydro model.
+
+    Args:
+        :k (Union[float, np.ndarray]): k values to evaluate P(k) at [h / Mpc]
+        :z (Union[float, np.ndarray]): Redshift.
+        :hydro_model (str): Name of the hydro model to use ('Astrid', 'IllustrisTNG', 'SIMBA', 'Swift-EAGLE')
+
+    Returns:
+        :epsilon (Union[float, np.ndarray]): Covariance of the prediction and the actual S.
+    """
     
+    if hydro_model not in epsilon_map:
+        raise ValueError(f"Hydro model '{hydro_model}' is not supported. Available models: {list(epsilon_map.keys())}")
+
+    return epsilon_map[hydro_model

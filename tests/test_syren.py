@@ -11,6 +11,7 @@ import symbolic_pofk.syrenhalofit as syrenhalofit
 
 import symbolic_pofk.linear_new as linear_new
 import symbolic_pofk.syren_new as syren_new
+import symbolic_pofk.syren_baryon as syren_baryon
 
 import symbolic_pofk.pytorch.linear as torch_linear
 import symbolic_pofk.pytorch.syrenhalofit as torch_syrenhalofit
@@ -595,3 +596,91 @@ def test_torch_syren_new():
         pnl_torch.detach().numpy()), atol=1e-6)
 
     return
+
+
+def test_syren_baryon():
+
+    kmin = 1e-4
+    kmax = 9
+    nk = 400
+    k = np.logspace(np.log10(kmin), np.log10(kmax), nk)
+
+    # Parameters to try
+    sigma8 = 0.8
+    Om = 0.3
+    A_SN1 = 1
+    A_SN2 = 1
+    A_AGN1 = 1
+    A_AGN2 = 1
+    z = 0.0
+    z_high = 127
+
+    # Get the baryon correction
+    for model in ['Astrid', 'SIMBA', 'IllustrisTNG', 'Swift-EAGLE']:
+        S_baryon = syren_baryon.S_hydro(
+            k, z, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, model)
+        epsilon_baryon = syren_baryon.epsilon_hydro(k, z, model)
+        assert isinstance(S_baryon, np.ndarray)
+        assert len(S_baryon) == len(k)
+        assert np.all(np.isfinite(S_baryon)), "S_baryon contains non-finite values"
+        assert np.all(S_baryon >= 0), "S_baryon contains negative values"
+        assert isinstance(epsilon_baryon, np.ndarray)
+        assert len(epsilon_baryon) == len(k)
+        assert np.all(np.isfinite(epsilon_baryon)), "epsilon_baryon contains non-finite values"
+        assert np.all(epsilon_baryon >= 0), "epsilon_baryon contains negative values"
+
+        # Check that the baryon correction is close to 1 at large scales
+        assert np.allclose(S_baryon[0], 1, atol=1e-3), \
+            f"S_baryon at large scales for {model} is not close to 1"
+    
+        # Check that the epsilon_baryon is close to 0 at large scales
+        assert np.allclose(epsilon_baryon[0], 0, atol=1e-3), \
+            f"epsilon_baryon at large scales for {model} is not close to 0"
+        
+        # Check that baryon correct all close to 1 at high z
+        S_baryon_high = syren_baryon.S_hydro(
+            k, z_high, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, model)
+        epsilon_baryon_high = syren_baryon.epsilon_hydro(k, z_high, model)
+        assert np.allclose(S_baryon_high, 1, atol=1e-3), \
+            f"S_baryon at high z for {model} is not close to 1"
+        assert np.allclose(epsilon_baryon_high, 0, atol=5e-3), \
+            f"epsilon_baryon at high z for {model} is not close to 0"
+        
+    # Check that a wrong model raises an error
+    with unittest.TestCase().assertRaises(ValueError):
+        syren_baryon.S_hydro(k, z, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, 'wrong_model')
+    with unittest.TestCase().assertRaises(ValueError):
+        syren_baryon.epsilon_hydro(k, z, 'wrong_model')
+        
+    # Now consider baryonification model
+    sigma8 = 0.834
+    Om = 0.3175
+    Ob = 0.049
+    logMc = 12.0
+    logeta = -0.3
+    logbeta = -0.22
+    logM1 = 10.5
+    logMinn = 13.4
+    logthetainn = -0.86
+    
+    S_baryon = syren_baryon.S_baryonification(k, z, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn)
+    S_baryon_high = syren_baryon.S_baryonification(k, z_high, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn)
+
+    assert isinstance(S_baryon, np.ndarray)
+    assert len(S_baryon) == len(k)
+    assert np.all(np.isfinite(S_baryon)), "S_baryon contains non-finite values"
+    assert np.all(S_baryon >= 0), "S_baryon contains negative values"
+    assert isinstance(S_baryon_high, np.ndarray)
+    assert len(S_baryon_high) == len(k)
+    assert np.all(np.isfinite(S_baryon_high)), "S_baryon_high contains non-finite values"
+    assert np.all(S_baryon_high >= 0), "S_baryon_high contains negative values"
+    # Check that the baryon correction is close to 1 at large scales
+    assert np.allclose(S_baryon[0], 1, atol=1e-3), \
+        "S_baryon at large scales for baryonification is not close to 1"
+    # Check that the baryon correction is close to 1 at high z
+    assert np.allclose(S_baryon_high[0], 1, atol=1e-3), \
+        "S_baryon at high z for baryonification is not close to 1"
+    
+
+    return
+
