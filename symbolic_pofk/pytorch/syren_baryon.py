@@ -1,5 +1,7 @@
 import torch
 
+# Check if a GPU is available and set the device
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def syren_baryon_Astrid(k, z, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
     """"

@@ -615,11 +615,14 @@ def test_syren_baryon():
     z = 0.0
     z_high = 127
 
+    a = 1 / (1 + z)
+    a_high = 1 / (1 + z_high)
+
     # Get the baryon correction
     for model in ['Astrid', 'SIMBA', 'IllustrisTNG', 'Swift-EAGLE']:
         S_baryon = syren_baryon.S_hydro(
-            k, z, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, model)
-        epsilon_baryon = syren_baryon.epsilon_hydro(k, z, model)
+            k, a, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, model)
+        epsilon_baryon = syren_baryon.epsilon_hydro(k, a, model)
         assert isinstance(S_baryon, np.ndarray)
         assert len(S_baryon) == len(k)
         assert np.all(np.isfinite(S_baryon)), "S_baryon contains non-finite values"
@@ -639,8 +642,8 @@ def test_syren_baryon():
         
         # Check that baryon correct all close to 1 at high z
         S_baryon_high = syren_baryon.S_hydro(
-            k, z_high, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, model)
-        epsilon_baryon_high = syren_baryon.epsilon_hydro(k, z_high, model)
+            k, a_high, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, model)
+        epsilon_baryon_high = syren_baryon.epsilon_hydro(k, a_high, model)
         assert np.allclose(S_baryon_high, 1, atol=1e-3), \
             f"S_baryon at high z for {model} is not close to 1"
         assert np.allclose(epsilon_baryon_high, 0, atol=5e-3), \
@@ -648,9 +651,9 @@ def test_syren_baryon():
         
     # Check that a wrong model raises an error
     with unittest.TestCase().assertRaises(ValueError):
-        syren_baryon.S_hydro(k, z, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, 'wrong_model')
+        syren_baryon.S_hydro(k, a, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, 'wrong_model')
     with unittest.TestCase().assertRaises(ValueError):
-        syren_baryon.epsilon_hydro(k, z, 'wrong_model')
+        syren_baryon.epsilon_hydro(k, a, 'wrong_model')
         
     # Now consider baryonification model
     sigma8 = 0.834
@@ -663,8 +666,8 @@ def test_syren_baryon():
     logMinn = 13.4
     logthetainn = -0.86
     
-    S_baryon = syren_baryon.S_baryonification(k, z, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn)
-    S_baryon_high = syren_baryon.S_baryonification(k, z_high, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn)
+    S_baryon = syren_baryon.S_baryonification(k, a, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn)
+    S_baryon_high = syren_baryon.S_baryonification(k, a_high, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn)
 
     assert isinstance(S_baryon, np.ndarray)
     assert len(S_baryon) == len(k)
