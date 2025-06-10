@@ -167,3 +167,4 @@ fortran/a.out
 symbolic_pofk/fortran/syrenhalofit
 symbolic_pofk/fortran/output.txt
 examples/*png
+examples/data
