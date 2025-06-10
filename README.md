@@ -20,6 +20,7 @@ Please see
 * [Bartlett et al. 2024](https://arxiv.org/abs/2402.17492) (Nonlinear power spectrum)
 * [Sui et al. 2024](https://arxiv.org/abs/2410.14623) ($w_0-w_a$ and non-zero neutrino masses)
 * [Kammerer et al. 2025](https://arxiv.org/abs/2410.14623) (Baryonic effects)
+  
 for further details.
 
 For the linear and nonlinear LCDM emulators, by default, outside the k range tested in Bartlett et al. 2023, 
