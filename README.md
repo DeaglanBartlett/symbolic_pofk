@@ -134,8 +134,7 @@ If you use the baryonic emulators, please cite
 @ARTICLE{syren_baryon,
      author = {{Kammerer}, L. and {Bartlett}, D.~J. and {Kronberger}, G. and {Desmond}, H.
                and {Ferreira}, P.~G. },  
-      title = "{syren-new: Precise formulae for the linear and nonlinear matter power spectra 
-      with massive neutrinos and dynamical dark energy}",
+      title = "{syren-baryon: Analytic emulators for the impact of baryons on the matter power spectrum}",
     journal = {arXiv e-prints},
    keywords = {Astrophysics - Cosmology and Nongalactic Astrophysics},
        year = 2025,
