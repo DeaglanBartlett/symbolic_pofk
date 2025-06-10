@@ -140,13 +140,13 @@ If you use the baryonic emulators, please cite
    keywords = {Astrophysics - Cosmology and Nongalactic Astrophysics},
        year = 2025,
       month = jun,
-        eid = {arXiv:2410.14623},
-      pages = {arXiv:2410.14623},
-        doi = {10.48550/2410.14623},
+        eid = {arXiv:2506.XXXXX},
+      pages = {arXiv:2506.XXXXX},
+        doi = {10.48550/2506.XXXXX},
 archivePrefix = {arXiv},
-     eprint = {2410.14623},
+     eprint = {2506.XXXXX},
 primaryClass = {astro-ph.CO},
-        url = {https://arxiv.org/abs/2410.14623},
+        url = {https://arxiv.org/abs/2506.XXXXX},
 }
 ```
 
