@@ -185,13 +185,13 @@ function_map = {
 }
 
 
-def S_hydro(k, theta_batch, hydro_model):
+def S_hydro(k_batch, theta_batch, hydro_model):
     """
     Compute the impact of baryonic physics on the matter power spectrum for a given hydro model.
     This is given by the ratio of the baryonic to non-baryonic power spectrum at ks provided.
 
     Args:
-        :k (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
+        :k_batch (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
         :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 7),
             the 7 parameters are:
                 a : Scale factor, a = 1/(1+z)
@@ -206,11 +206,18 @@ def S_hydro(k, theta_batch, hydro_model):
     Returns:
         :S (torch.Tensor): Baryonic suppression of the matter power spectrum
     """
+
+    theta = torch.atleast_2d(theta_batch)
+    k = torch.atleast_2d(k_batch)
+    if theta.shape[1] != 7:
+        theta = theta.T  # Ensure theta is of shape (batch_size, 7) if it was given as (7, batch_size)
+    if k.shape[1] != 1:
+        k = k.T
     
     if hydro_model not in function_map:
         raise ValueError(f"Hydro model '{hydro_model}' is not supported. Available models: {list(function_map.keys())}")
 
-    return function_map[hydro_model](k, theta_batch)
+    return torch.squeeze(function_map[hydro_model](k, theta))
 
 
 def S_baryonification(k, theta_batch,):
@@ -256,23 +263,21 @@ def S_baryonification(k, theta_batch,):
     s = torch.exp(log_s)
 
     return s
-    
 
-# SORT FROM HERE
 
 def epsilon_Astrid(k, a):
     """
     Calculate the typical error of the prediction of `Astrid`.
 
     Args:
-        :k (Union[float, np.ndarray]): k values to evaluate P(k) at [h / Mpc]
-        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
+        :k (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
+        :a (torch.Tensor): tensor containing the scale factor, a = 1/(1+z) with shape (batch_size, 1)
 
     Returns:
-        :epsilon (Union[float, np.ndarray]): Covariance of the prediction and the actual S of Astrid.
+        :epsilon (torch.Tensor): Covariance of the prediction and the actual S of Astrid.
     """
 
-    z = 1/a - 1
+    z = 1/a.T - 1
     alpha_1 = 0.0202
     alpha_2 = 0.18327
     alpha_3 = 1.3
@@ -287,14 +292,15 @@ def epsilon_IllustrisTNG(k, a):
     Calculate the typical error of the prediction of `IllustrisTNG`.
 
     Args:
-        :k (Union[float, np.ndarray]): k values to evaluate P(k) at [h / Mpc]
-        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
+        :k (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
+        :a (torch.Tensor): tensor containing the scale factor, a = 1/(1+z) with shape (batch_size, 1)
+
 
     Returns:
-        :epsilon (Union[float, np.ndarray]): Covariance of the prediction and the actual S of IllustrisTNG.
+        :epsilon (torch.Tensor): Covariance of the prediction and the actual S of IllustrisTNG.
     """
 
-    z = 1/a - 1
+    z = 1/a.T - 1
     alpha_1 = 17.119
     alpha_2 = 0.63
     alpha_3 = 48.797
@@ -309,14 +315,15 @@ def epsilon_SIMBA(k, a):
     Calculate the typical error of the prediction of `SIMBA`.
 
     Args:
-        :k (Union[float, np.ndarray]): k values to evaluate P(k) at [h / Mpc]
-        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
+        :k (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
+        :a (torch.Tensor): tensor containing the scale factor, a = 1/(1+z) with shape (batch_size, 1)
+
 
     Returns:
-        :epsilon (Union[float, np.ndarray]): Covariance of the prediction and the actual S of SIMBA.
+        :epsilon (torch.Tensor): Covariance of the prediction and the actual S of SIMBA.
     """
 
-    z = 1/a - 1
+    z = 1/a.T - 1
     alpha_1 = 0.05904
     alpha_2 = 0.43
     alpha_3 = 0.63239
@@ -331,14 +338,15 @@ def epsilon_Swift_EAGLE(k, a):
     Calculate the typical error of the prediction of `Swift_EAGLE`.
 
     Args:
-        :k (Union[float, np.ndarray]): k values to evaluate P(k) at [h / Mpc]
-        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
+        :k (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
+        :a (torch.Tensor): tensor containing the scale factor, a = 1/(1+z) with shape (batch_size, 1)
+
 
     Returns:
-        :epsilon (Union[float, np.ndarray]): Covariance of the prediction and the actual S of Swift-EAGLE.
+        :epsilon (torch.Tensor): Covariance of the prediction and the actual S of Swift-EAGLE.
     """
 
-    z = 1/a - 1
+    z = 1/a.T - 1
     alpha_1 = 0.032
     alpha_2 = 0.54
     alpha_3 = 0.363
@@ -354,21 +362,28 @@ epsilon_map = {
     'Swift-EAGLE': epsilon_Swift_EAGLE,
 }
 
-def epsilon_hydro(k, a, hydro_model):
+def epsilon_hydro(k_batch, a_batch, hydro_model):
     """
     Calculate the typical error of the prediction for a given hydro model.
 
     Args:
-        :k (Union[float, np.ndarray]): k values to evaluate P(k) at [h / Mpc]
-        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
+        :k_batch (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
+        :a_batch (torch.Tensor): tensor containing the scale factor, a = 1/(1+z) with shape (batch_size, 1)
         :hydro_model (str): Name of the hydro model to use ('Astrid', 'IllustrisTNG', 'SIMBA', 'Swift-EAGLE')
 
     Returns:
-        :epsilon (Union[float, np.ndarray]): Covariance of the prediction and the actual S.
+        :epsilon (torch.Tensor): Covariance of the prediction and the actual S.
     """
     
     if hydro_model not in epsilon_map:
         raise ValueError(f"Hydro model '{hydro_model}' is not supported. Available models: {list(epsilon_map.keys())}")
 
-    return epsilon_map[hydro_model](k, a)
+    a = torch.atleast_2d(a_batch)
+    k = torch.atleast_2d(k_batch)
+    if a.shape[1] != 1:
+        a = a.T  # Ensure a is of shape (batch_size, 1) if it was given as (1, batch_size)
+    if k.shape[1] != 1:
+        k = k.T
+
+    return torch.squeeze(epsilon_map[hydro_model](k, a))
     

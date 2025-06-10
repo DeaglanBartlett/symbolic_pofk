@@ -719,56 +719,82 @@ def test_syren_baryon_torch():
     for model in ['Astrid', 'SIMBA', 'IllustrisTNG', 'Swift-EAGLE']:
         S_baryon_np = syren_baryon.S_hydro(
             k, a, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, model)
-        # epsilon_baryon_np = syren_baryon.epsilon_hydro(k, a, model)
+        epsilon_baryon_np = syren_baryon.epsilon_hydro(k, a, model)
         S_baryon = torch_syren_baryon.S_hydro(
             kt, theta, model)
-        # epsilon_baryon = syren_baryon.epsilon_hydro(kt, a, model)
+        epsilon_baryon = torch_syren_baryon.epsilon_hydro(kt, torch.tensor([a]), model)
         assert isinstance(S_baryon, torch.Tensor)
         assert len(S_baryon) == len(k)
         assert np.all(np.isfinite(S_baryon.detach().numpy())), "S_baryon contains non-finite values"
         assert np.all(S_baryon.detach().numpy() >= 0), "S_baryon contains negative values"
-        # assert isinstance(epsilon_baryon, np.ndarray)
-        # assert len(epsilon_baryon) == len(k)
-        # assert np.all(np.isfinite(epsilon_baryon)), "epsilon_baryon contains non-finite values"
-        # assert np.all(epsilon_baryon >= 0), "epsilon_baryon contains negative values"
+        assert isinstance(epsilon_baryon, torch.Tensor)
+        assert len(epsilon_baryon) == len(k)
+        assert np.all(np.isfinite(epsilon_baryon.detach().numpy())), "epsilon_baryon contains non-finite values"
+        assert np.all(epsilon_baryon.detach().numpy() >= 0), "epsilon_baryon contains negative values"
+
+        # Check accidentally transposing input is fine
+        S_baryon_transpose = torch_syren_baryon.S_hydro(
+            kt.T, theta.T, model)
+        epsilon_baryon_transpose = torch_syren_baryon.epsilon_hydro(
+            kt.T, torch.tensor([a]).T, model)
+        assert np.allclose(S_baryon_transpose.detach().numpy(), S_baryon_np, atol=1e-6), \
+            f"S_baryon for {model} does not match numpy version after transpose"
+        assert np.allclose(epsilon_baryon_transpose.detach().numpy(), epsilon_baryon_np, atol=1e-6), \
+            f"epsilon_baryon for {model} does not match numpy version after transpose"
 
         # Check close valyes
         assert np.allclose(S_baryon.detach().numpy(), S_baryon_np, atol=1e-6), \
             f"S_baryon for {model} does not match numpy version"
-        # assert np.allclose(epsilon_baryon, epsilon_baryon_np, atol=1e-6), \
-        #     f"epsilon_baryon for {model} does not match numpy version"
+        assert np.allclose(epsilon_baryon.detach().numpy(), epsilon_baryon_np, atol=1e-6), \
+            f"epsilon_baryon for {model} does not match numpy version"
 
         # Check that the baryon correction is close to 1 at large scales
         assert np.allclose(S_baryon.detach().numpy()[0], 1, atol=1e-3), \
             f"S_baryon at large scales for {model} is not close to 1"
     
         # Check that the epsilon_baryon is close to 0 at large scales
-        # assert np.allclose(epsilon_baryon[0], 0, atol=1e-3), \
-        #     f"epsilon_baryon at large scales for {model} is not close to 0"
+        assert np.allclose(epsilon_baryon.detach().numpy()[0], 0, atol=1e-3), \
+            f"epsilon_baryon at large scales for {model} is not close to 0"
         
         # Check that baryon correct all close to 1 at high z
         S_baryon_high_np = syren_baryon.S_hydro(
             k, a_high, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, model)
-        # epsilon_baryon_high_np = syren_baryon.epsilon_hydro(k, a_high, model)
+        epsilon_baryon_high_np = syren_baryon.epsilon_hydro(k, a_high, model)
         S_baryon_high = torch_syren_baryon.S_hydro(
             kt, theta_high, model)
-        # epsilon_baryon_high = torch_syren_baryon.epsilon_hydro(kt, a_high, model)
+        epsilon_baryon_high = torch_syren_baryon.epsilon_hydro(kt, torch.tensor([a_high]), model)
         assert np.allclose(S_baryon_high.detach().numpy(), 1, atol=1e-3), \
             f"S_baryon at high z for {model} is not close to 1"
-        # assert np.allclose(epsilon_baryon_high, 0, atol=5e-3), \
-        #     f"epsilon_baryon at high z for {model} is not close to 0"
+        assert np.allclose(epsilon_baryon_high.detach().numpy(), 0, atol=5e-3), \
+            f"epsilon_baryon at high z for {model} is not close to 0"
         
         # Check that the torch version is close to the numpy version
         assert np.allclose(S_baryon_high.detach().numpy(), S_baryon_high_np, atol=1e-6), \
             f"S_baryon_high for {model} does not match numpy version"
-        # assert np.allclose(epsilon_baryon_high, epsilon_baryon_high_np, atol=1e-6), \
-        #     f"epsilon_baryon_high for {model} does not match numpy version"
+        assert np.allclose(epsilon_baryon_high.detach().numpy(), epsilon_baryon_high_np, atol=1e-6), \
+            f"epsilon_baryon_high for {model} does not match numpy version"
+        
+        # Check that we can do a range of k and a simultaneously with epsilon
+        all_a = torch.linspace(0.1, 1.0, 10).reshape(1, -1)
+        epsilon = torch_syren_baryon.epsilon_hydro(
+            kt, all_a, model)
+        assert isinstance(epsilon, torch.Tensor)
+        assert epsilon.shape == torch.Size([kt.shape[0], all_a.shape[1]]), \
+            f"epsilon shape mismatch: {tuple(np.array(epsilon.shape))} != {(kt.shape[0], all_a.shape[1])}"
+        
+        # Check that we can do a range of k and a simultaneously with S_hydro
+        theta_rep = theta.repeat(5, 1)
+        S = torch_syren_baryon.S_hydro(
+            kt, theta_rep, model)
+        assert isinstance(S, torch.Tensor)
+        assert S.shape == torch.Size([kt.shape[0], theta_rep.shape[0]]), \
+            f"S shape mismatch: {tuple(np.array(S.shape))} != {(kt.shape[0], theta_rep.shape[0])}"
                 
     # Check that a wrong model raises an error
     with unittest.TestCase().assertRaises(ValueError):
-        torch_syren_baryon.S_hydro(k, theta, 'wrong_model')
-    # with unittest.TestCase().assertRaises(ValueError):
-    #     torch_syren_baryon.epsilon_hydro(k, a, 'wrong_model')
+        torch_syren_baryon.S_hydro(kt, theta, 'wrong_model')
+    with unittest.TestCase().assertRaises(ValueError):
+        torch_syren_baryon.epsilon_hydro(kt, torch.tensor([a]), 'wrong_model')
         
     # Now consider baryonification model
     sigma8 = 0.834
@@ -813,4 +839,3 @@ def test_syren_baryon_torch():
         "S_baryon_high for baryonification does not match numpy version"
 
     return
-
