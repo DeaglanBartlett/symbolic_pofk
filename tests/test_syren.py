@@ -622,7 +622,7 @@ def test_syren_baryon():
     # Get the baryon correction
     for model in ['Astrid', 'SIMBA', 'IllustrisTNG', 'Swift-EAGLE']:
         S_baryon = syren_baryon.S_hydro(
-            k, a, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, model)
+            k, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, a, model)
         epsilon_baryon = syren_baryon.epsilon_hydro(k, a, model)
         assert isinstance(S_baryon, np.ndarray)
         assert len(S_baryon) == len(k)
@@ -643,7 +643,7 @@ def test_syren_baryon():
         
         # Check that baryon correct all close to 1 at high z
         S_baryon_high = syren_baryon.S_hydro(
-            k, a_high, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, model)
+            k, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, a_high, model)
         epsilon_baryon_high = syren_baryon.epsilon_hydro(k, a_high, model)
         assert np.allclose(S_baryon_high, 1, atol=1e-3), \
             f"S_baryon at high z for {model} is not close to 1"
@@ -667,8 +667,8 @@ def test_syren_baryon():
     logMinn = 13.4
     logthetainn = -0.86
     
-    S_baryon = syren_baryon.S_baryonification(k, a, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn)
-    S_baryon_high = syren_baryon.S_baryonification(k, a_high, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn)
+    S_baryon = syren_baryon.S_baryonification(k, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn, a)
+    S_baryon_high = syren_baryon.S_baryonification(k, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn, a_high)
 
     assert isinstance(S_baryon, np.ndarray)
     assert len(S_baryon) == len(k)
@@ -684,7 +684,6 @@ def test_syren_baryon():
     # Check that the baryon correction is close to 1 at high z
     assert np.allclose(S_baryon_high, 1, atol=1e-3), \
         "S_baryon at high z for baryonification is not close to 1"
-    
 
     return
 
@@ -710,15 +709,15 @@ def test_syren_baryon_torch():
     a = 1 / (1 + z)
     a_high = 1 / (1 + z_high)
 
-    theta = torch.tensor([a, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2,],
+    theta = torch.tensor([Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, a],
                         requires_grad=True).reshape(1, -1)
-    theta_high = torch.tensor([a_high, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2,],
+    theta_high = torch.tensor([Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, a_high],
                         requires_grad=True).reshape(1, -1)
 
     # Get the baryon correction
     for model in ['Astrid', 'SIMBA', 'IllustrisTNG', 'Swift-EAGLE']:
         S_baryon_np = syren_baryon.S_hydro(
-            k, a, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, model)
+            k, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, a, model)
         epsilon_baryon_np = syren_baryon.epsilon_hydro(k, a, model)
         S_baryon = torch_syren_baryon.S_hydro(
             kt, theta, model)
@@ -758,7 +757,7 @@ def test_syren_baryon_torch():
         
         # Check that baryon correct all close to 1 at high z
         S_baryon_high_np = syren_baryon.S_hydro(
-            k, a_high, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2, model)
+            k, Om, sigma8, A_SN1, A_SN2, A_AGN1, A_AGN2,  a_high, model)
         epsilon_baryon_high_np = syren_baryon.epsilon_hydro(k, a_high, model)
         S_baryon_high = torch_syren_baryon.S_hydro(
             kt, theta_high, model)
@@ -807,15 +806,15 @@ def test_syren_baryon_torch():
     logMinn = 13.4
     logthetainn = -0.86
 
-    theta = torch.tensor([a, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn],
+    theta = torch.tensor([Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn, a],
                          requires_grad=True).reshape(1, -1)
-    theta_high = torch.tensor([a_high, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn],
+    theta_high = torch.tensor([Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn, a_high],
                          requires_grad=True).reshape(1, -1)
     
     S_baryon = torch_syren_baryon.S_baryonification(kt, theta)
     S_baryon_high = torch_syren_baryon.S_baryonification(kt, theta_high)
-    S_baryon_np = syren_baryon.S_baryonification(k, a, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn)
-    S_baryon_high_np = syren_baryon.S_baryonification(k, a_high, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn)
+    S_baryon_np = syren_baryon.S_baryonification(k, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn, a)
+    S_baryon_high_np = syren_baryon.S_baryonification(k, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn, a_high)
 
     assert isinstance(S_baryon, torch.Tensor)
     assert len(S_baryon) == len(k)
@@ -839,3 +838,4 @@ def test_syren_baryon_torch():
         "S_baryon_high for baryonification does not match numpy version"
 
     return
+     

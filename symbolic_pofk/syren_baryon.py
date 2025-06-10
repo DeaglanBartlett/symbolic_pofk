@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def S_Astrid(k, a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
+def S_Astrid(k, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2, a):
     """"
     Compute the impact of baryonic physics on the matter power spectrum.
 
@@ -9,13 +9,13 @@ def S_Astrid(k, a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
 
     Args:
         :k (Union[float, np.ndarray]): Wavenumber in unit k / h Mpc-1
-        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
         :Omega_m (Union[float, np.ndarray]): Density of matter.
         :sigma_8 (Union[float, np.ndarray]): Amplitude of matter fluctuations
         :A_SN1 (Union[float, np.ndarray]): Energy per SFR of the galactic winds
         :A_AGN1 (Union[float, np.ndarray]): Energy per black-hole accretion rate of the kinetic black-hole feedback
         :A_SN2 (Union[float, np.ndarray]): Wind speed of the galactic winds
         :A_AGN2 (Union[float, np.ndarray]): Energy per unit black-hole accretion rate of the thermal model of the black-hole feedback
+        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
 
     Returns:
         :S (Union[float, np.ndarray)): Baryonic suppression of the matter power spectrum
@@ -40,7 +40,7 @@ def S_Astrid(k, a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
     return s
     
 
-def S_IllustrisTNG(k, a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
+def S_IllustrisTNG(k, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2, a):
     """"
     Compute the impact of baryonic physics on the matter power spectrum.
 
@@ -48,13 +48,13 @@ def S_IllustrisTNG(k, a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
 
     Args:
         :k (Union[float, np.ndarray]): Wavenumber in unit h Mpc-1
-        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
         :Omega_m (Union[float, np.ndarray]): Density of matter.
         :sigma_8 (Union[float, np.ndarray]): Amplitude of matter fluctuations
         :A_SN1 (Union[float, np.ndarray]): Energy per unit SFR of the galactic winds
         :A_AGN1 (Union[float, np.ndarray]): Energy per unit blach-hole accretion rate, not used in the model, only here for consistency with other simulators.
         :A_SN2 (Union[float, np.ndarray]): Wind speed of the galactic winds
         :A_AGN2 (Union[float, np.ndarray]): Ejection speed/burstiness of the kinetic mode of the black-hole feedback
+        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
 
     Returns:
         :S (Union[float, np.ndarray)): Baryonic suppression of the matter power spectrum
@@ -78,7 +78,7 @@ def S_IllustrisTNG(k, a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
     return s
     
 
-def S_SIMBA(k, a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
+def S_SIMBA(k, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2, a):
     """"
     Compute the impact of baryonic physics on the matter power spectrum.
 
@@ -86,13 +86,13 @@ def S_SIMBA(k, a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
 
     Args:
         :k (Union[float, np.ndarray]): Wavenumber in unit h Mpc-1
-        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
         :Omega_m (Union[float, np.ndarray]): Density of matter.
         :sigma_8 (Union[float, np.ndarray]): Amplitude of matter fluctuations
         :A_SN1 (Union[float, np.ndarray]): Mass loading of the galactic winds
         :A_AGN1 (Union[float, np.ndarray]): Momentum flux of the QSO & jet-mode black-hole feedback
         :A_SN2 (Union[float, np.ndarray]): Wind speed of the galactic winds
         :A_AGN2 (Union[float, np.ndarray]): Jet speed of the jet-mode black-hole feedback
+        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
 
     Returns:
         :S (Union[float, np.ndarray)): Baryonic suppression of the matter power spectrum
@@ -117,7 +117,7 @@ def S_SIMBA(k, a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
     return s
     
 
-def S_Swift_EAGLE(k, a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
+def S_Swift_EAGLE(k, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2, a):
     """"
     Compute the impact of baryonic physics on the matter power spectrum.
 
@@ -125,13 +125,13 @@ def S_Swift_EAGLE(k, a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2):
 
     Args:
         :k (Union[float, np.ndarray]): Wavenumber in unit h Mpc-1
-        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
         :Omega_m (Union[float, np.ndarray]): Density of matter.
         :sigma_8 (Union[float, np.ndarray]): amplitude of matter fluctuations
         :A_SN1 (Union[float, np.ndarray]): Thermal energy injected in each SNII event
         :A_AGN1 (Union[float, np.ndarray]): Scaling of the black hole Bondi accretion rate
         :A_SN2 (Union[float, np.ndarray]): Metallicity dependence of the stellar feedback fraction per unit stellar mass
         :A_AGN2 (Union[float, np.ndarray]): Temperature jump of gas particles in AGN feedback events
+        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
 
     Returns:
         :S (Union[float, np.ndarray)): Baryonic suppression of the matter power spectrum
@@ -171,20 +171,20 @@ function_map = {
 }
 
 
-def S_hydro(k, a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2, hydro_model):
+def S_hydro(k, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2, a, hydro_model):
     """
     Compute the impact of baryonic physics on the matter power spectrum for a given hydro model.
     This is given by the ratio of the baryonic to non-baryonic power spectrum at ks provided.
 
     Args:
         :k (Union[float, np.ndarray]): Wavenumber in unit h Mpc-1
-        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
         :Omega_m (Union[float, np.ndarray]): Density of matter.
         :sigma_8 (Union[float, np.ndarray]): Amplitude of matter fluctuations
         :A_SN1 (Union[float, np.ndarray]): First supernova feedback parameter (see specific hydro model for details)
         :A_SN2 (Union[float, np.ndarray]): Second supernova feedback parameter (see specific hydro model for details)
         :A_AGN1 (Union[float, np.ndarray]): First AGN feedback parameter (see specific hydro model for details)
         :A_AGN2 (Union[float, np.ndarray]): Second AGN feedback parameter (see specific hydro model for details)
+        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
         :hydro_model (str): Name of the hydro model to use ('Astrid', 'IllustrisTNG', 'SIMBA', 'Swift-EAGLE')
 
     Returns:
@@ -194,17 +194,16 @@ def S_hydro(k, a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2, hydro_model):
     if hydro_model not in function_map:
         raise ValueError(f"Hydro model '{hydro_model}' is not supported. Available models: {list(function_map.keys())}")
 
-    return function_map[hydro_model](k, a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2)
+    return function_map[hydro_model](k, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2, a)
 
     
 
-def S_baryonification(k, a, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn):
+def S_baryonification(k, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn, a):
     """"
     Compute nonlinear P(k) for the cosmology of interest
 
     Args:
         :k (Union[float, np.ndarray]): k values to evaluate P(k) at [h / Mpc]
-        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
         :Om (Union[float, np.ndarray]): The z=0 total matter density parameter, Omega_m
         :Ob (Union[float, np.ndarray]): The z=0 baryonic density parameter, Omega_b
         :sigma8 (Union[float, np.ndarray]): Root-mean-square density fluctuation when the linearly
@@ -215,6 +214,7 @@ def S_baryonification(k, a, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMi
         :logM1 (Union[float, np.ndarray]): (Log10 of) characteristic halo mass scale for central galaxy
         :logMinn (Union[float, np.ndarray]): (Log10 of) property describing density profile of hot gas in haloes
         :logthetainn (Union[float, np.ndarray]): (Log10 of) property describing density profile of hot gas in haloes
+        :a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
     
     Returns:
         :S (np.ndarray): Ratio of baryonic to non-baryonic power spectrum at ks provided.

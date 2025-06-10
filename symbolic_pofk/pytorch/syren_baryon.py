@@ -13,19 +13,19 @@ def S_Astrid(k, theta_batch):
         :k (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
         :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 7),
             the 7 parameters are :
-                a : Scale factor, a = 1/(1+z)
                 Omega_m : Density of matter.
                 sigma_8 : Amplitude of matter fluctuations
                 A_SN1 : Energy per SFR of the galactic winds
                 A_AGN1 : Energy per black-hole accretion rate of the kinetic black-hole feedback
                 A_SN2 : Wind speed of the galactic winds
                 A_AGN2 : Energy per unit black-hole accretion rate of the thermal model of the black-hole feedback
+                a : Scale factor, a = 1/(1+z)
 
     Returns:
         :S (torch.Tensor): Baryonic suppression of the matter power spectrum
     """
 
-    a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2 = theta_batch.unbind(dim=1)
+    Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2, a = theta_batch.unbind(dim=1)
     
     z = 1/a - 1
     alpha_1 = 7.9*A_SN2/Omega_m
@@ -55,19 +55,19 @@ def S_IllustrisTNG(k, theta_batch):
         :k (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
         :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 7),
             the 7 parameters are :
-                a (Union[float, np.ndarray]): Scale factor, a = 1/(1+z)
                 Omega_m : Density of matter.
                 sigma_8 : Amplitude of matter fluctuations
                 A_SN1 : Energy per unit SFR of the galactic winds
                 A_AGN1 : Energy per unit blach-hole accretion rate, not used in the model, only here for consistency with other simulators.
                 A_SN2 : Wind speed of the galactic winds
                 A_AGN2 : Ejection speed/burstiness of the kinetic mode of the black-hole feedback
+                a : Scale factor, a = 1/(1+z)
 
     Returns:
         :S (torch.Tensor): Baryonic suppression of the matter power spectrum
     """
 
-    a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2 = theta_batch.unbind(dim=1)
+    Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2, a = theta_batch.unbind(dim=1)
     
     z = 1/a - 1
     alpha_1 = 0.0109*A_SN2/Omega_m
@@ -96,19 +96,19 @@ def S_SIMBA(k, theta_batch):
         :k (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
         :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 7),
             the 7 parameters are :
-                a : Scale factor, a = 1/(1+z)
                 Omega_m : Density of matter.
                 sigma_8 : Amplitude of matter fluctuations
                 A_SN1 : Mass loading of the galactic winds
                 A_AGN1 : Momentum flux of the QSO & jet-mode black-hole feedback
                 A_SN2 : Wind speed of the galactic winds
                 A_AGN2 : Jet speed of the jet-mode black-hole feedback
+                a : Scale factor, a = 1/(1+z)
 
     Returns:
         :S (torch.Tensor): Baryonic suppression of the matter power spectrum
     """
     
-    a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2 = theta_batch.unbind(dim=1)
+    Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2, a = theta_batch.unbind(dim=1)
 
     z = 1/a - 1
     alpha_1 = 0.00133/Omega_m**2
@@ -138,19 +138,19 @@ def S_Swift_EAGLE(k, theta_batch):
         :k (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
         :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 7),
             the 7 parameters are:
-                a : Scale factor, a = 1/(1+z)
                 Omega_m : Density of matter.
                 sigma_8 : amplitude of matter fluctuations
                 A_SN1 : Thermal energy injected in each SNII event
                 A_AGN1 : Scaling of the black hole Bondi accretion rate
                 A_SN2 : Metallicity dependence of the stellar feedback fraction per unit stellar mass
                 A_AGN2 : Temperature jump of gas particles in AGN feedback events
+                a : Scale factor, a = 1/(1+z)
 
     Returns:
         :S (torch.Tensor): Baryonic suppression of the matter power spectrum
     """
 
-    a, Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2 = theta_batch.unbind(dim=1)
+    Omega_m, sigma_8, A_SN1, A_SN2, A_AGN1, A_AGN2, a = theta_batch.unbind(dim=1)
     
     z = 1/a - 1
     alpha_1 = 0.272*Omega_m
@@ -194,13 +194,13 @@ def S_hydro(k_batch, theta_batch, hydro_model):
         :k_batch (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
         :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 7),
             the 7 parameters are:
-                a : Scale factor, a = 1/(1+z)
                 Omega_m : Density of matter.
                 sigma_8 : Amplitude of matter fluctuations
                 A_SN1 : First supernova feedback parameter (see specific hydro model for details)
                 A_SN2 : Second supernova feedback parameter (see specific hydro model for details)
                 A_AGN1 : First AGN feedback parameter (see specific hydro model for details)
                 A_AGN2 : Second AGN feedback parameter (see specific hydro model for details)
+                a : Scale factor, a = 1/(1+z)
         :hydro_model (str): Name of the hydro model to use ('Astrid', 'IllustrisTNG', 'SIMBA', 'Swift-EAGLE')
 
     Returns:
@@ -228,7 +228,6 @@ def S_baryonification(k, theta_batch,):
         :k (torch.Tensor): tensor containing the k values to evaluate P(k) at [h / Mpc] with shape (n_k,1)
         :theta_batch (torch.Tensor): tensor containing the parameters with shape (batch_size, 10),
             the 10 parameters are:
-                a : Scale factor, a = 1/(1+z)
                 sigma8 : Root-mean-square density fluctuation when the linearly
                     evolved field is smoothed with a top-hat filter of radius 8 Mpc/h
                 Om : The z=0 total matter density parameter, Omega_m
@@ -239,13 +238,14 @@ def S_baryonification(k, theta_batch,):
                 logM1 : (Log of) characteristic halo mass scale for central galaxy
                 logMinn : (Log of) property describing density profile of hot gas in haloes
                 logthetainn : (Log of) property describing density profile of hot gas in haloes
+                a : Scale factor, a = 1/(1+z)
     
     Returns:
         :S (torch.Tensor): Ratio of baryonic to non-baryonic power spectrum at ks provided.
 
     """
     
-    a, Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn = theta_batch.unbind(dim=1)
+    Om, Ob, sigma8, logMc, logeta, logbeta, logM1, logMinn, logthetainn, a = theta_batch.unbind(dim=1)
 
     z = 1/a - 1
     alpha_1 = 2.4663*(5.823*Ob)**(3.23*Om)
