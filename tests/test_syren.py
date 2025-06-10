@@ -838,4 +838,3 @@ def test_syren_baryon_torch():
         "S_baryon_high for baryonification does not match numpy version"
 
     return
-     
