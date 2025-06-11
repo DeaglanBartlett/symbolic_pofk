@@ -141,7 +141,7 @@ If you use the baryonic emulators, please cite
       month = jun,
         eid = {arXiv:2506.08783},
       pages = {arXiv:2506.08783},
-        doi = {10.48550/2506.08783},
+        doi = {10.48550/arXiv.2506.08783},
 archivePrefix = {arXiv},
      eprint = {2506.08783},
 primaryClass = {astro-ph.CO},
