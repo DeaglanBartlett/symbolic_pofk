@@ -3,7 +3,7 @@
 [![arXiv](https://img.shields.io/badge/arXiv-2311.15865-b31b1b.svg)](https://arxiv.org/abs/2311.15865)
 [![arXiv](https://img.shields.io/badge/arXiv-2402.17492-b31b1b.svg)](https://arxiv.org/abs/2402.17492)
 [![arXiv](https://img.shields.io/badge/arXiv-2410.14623-b31b1b.svg)](https://arxiv.org/abs/2410.14623)
-[![arXiv](https://img.shields.io/badge/arXiv-2506.XXXXX-b31b1b.svg)](https://arxiv.org/abs/2506.XXXXX)
+[![arXiv](https://img.shields.io/badge/arXiv-2506.08783-b31b1b.svg)](https://arxiv.org/abs/2506.08783)
 
 [![Coverage](https://img.shields.io/codecov/c/github/DeaglanBartlett/symbolic_pofk)](https://app.codecov.io/gh/DeaglanBartlett/symbolic_pofk)
 [![Build Status](https://github.com/DeaglanBartlett/symbolic_pofk/actions/workflows/build-linux.yml/badge.svg)](https://github.com/DeaglanBartlett/symbolic_pofk/actions/workflows/build-linux.yml)
@@ -19,7 +19,7 @@ Please see
 * [Bartlett et al. 2023](https://arxiv.org/abs/2311.15865) (Linear power spectrum) 
 * [Bartlett et al. 2024](https://arxiv.org/abs/2402.17492) (Nonlinear power spectrum)
 * [Sui et al. 2024](https://arxiv.org/abs/2410.14623) ($w_0-w_a$ and non-zero neutrino masses)
-* [Kammerer et al. 2025](https://arxiv.org/abs/2410.14623) (Baryonic effects)
+* [Kammerer et al. 2025](https://arxiv.org/abs/2506.08783) (Baryonic effects)
   
 for further details.
 
@@ -139,13 +139,13 @@ If you use the baryonic emulators, please cite
    keywords = {Astrophysics - Cosmology and Nongalactic Astrophysics},
        year = 2025,
       month = jun,
-        eid = {arXiv:2506.XXXXX},
-      pages = {arXiv:2506.XXXXX},
-        doi = {10.48550/2506.XXXXX},
+        eid = {arXiv:2506.08783},
+      pages = {arXiv:2506.08783},
+        doi = {10.48550/2506.08783},
 archivePrefix = {arXiv},
-     eprint = {2506.XXXXX},
+     eprint = {2506.08783},
 primaryClass = {astro-ph.CO},
-        url = {https://arxiv.org/abs/2506.XXXXX},
+        url = {https://arxiv.org/abs/2506.08783},
 }
 ```
 
