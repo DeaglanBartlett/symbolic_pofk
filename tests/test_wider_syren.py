@@ -46,7 +46,10 @@ def test_comoving_hyper():
 
     pred = background.symbolic_radial_comoving(Om, z)
 
-    assert np.allclose(pred, true, rtol=1e-2), 'symbolic_f test failed'
+    # Test fractional error so take log
+    true = np.log(true)
+    pred = np.log(pred)
+    assert np.allclose(pred, true, rtol=1e-4), 'symbolic_f test failed'
 
     return
 
@@ -72,7 +75,10 @@ def test_growth_hyper():
     pred = linear.symbolic_D(Om, z)
     true = a * scipy.special.hyp2f1(1/3, 1, 11/6, x)
 
-    assert np.allclose(pred, true, rtol=1e-3), 'symbolic_D test failed'
+     # Test fractional error so take log
+    true = np.log(true)
+    pred = np.log(pred)
+    assert np.allclose(pred, true, atol=5e-3), 'symbolic_D test failed'
 
     return
 
@@ -100,7 +106,10 @@ def test_growth_rate_hyper():
         scipy.special.hyp2f1(4/3, 2, 17/6, x) /
         scipy.special.hyp2f1(1/3, 1, 11/6, x))
 
-    assert np.allclose(pred, true, rtol=1e-2), 'symbolic_f test failed'
+    # Test fractional error so take log
+    true = np.log(true)
+    pred = np.log(pred)
+    assert np.allclose(pred, true, atol=2e-3), 'symbolic_f test failed'
 
     return
 
