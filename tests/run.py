@@ -11,7 +11,7 @@ def run_tests():
         'pytest',
         '--cov-report=xml',
         f'--cov={symbolic_pofk_path}',
-        'tests/test_syren.py'
+        'tests'
     ]
     
     # Run pytest
