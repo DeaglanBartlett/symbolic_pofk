@@ -170,7 +170,7 @@ for the comoving distance and/or growth rate, please cite
     journal = {arXiv e-prints},
    keywords = {Astrophysics - Cosmology and Nongalactic Astrophysics},
        year = 2025,
-      month = jun,
+      month = oct,
         eid = {arXiv:2510.XXXXX},
       pages = {arXiv:2510.XXXXX},
         doi = {10.48550/arXiv.2510.XXXXX},
