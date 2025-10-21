@@ -12,9 +12,15 @@
 
 
 
-Precise symbolic emulators of the linear and non-linear matter power spectra and for the conversion
-$\sigma_8 \leftrightarrow A_{\rm s}$ as a function of cosmology.
-Here we give the emulators as simple python functions and as a fortran90 routine, but these can be 
+Precise symbolic emulators of:
+* The linear and non-linear matter power spectra
+* Comoving distance
+* Linear growth factor
+* Conversion $\sigma_8 \leftrightarrow A_{\rm s}$
+as a function of cosmology.
+
+Here we give the emulators as simple python functions. 
+Some emulators are given as torch and/or fortran90 functions, but all can be 
 easily copied, pasted and modified to the language of your choice.
 Please see
 * [Bartlett et al. 2023](https://arxiv.org/abs/2311.15865) (Linear power spectrum) 
@@ -59,6 +65,8 @@ and the nonlinear emulator in `examples/halofit_example.py`.
 We show how to use the emulators for the extended cosmology
 (including neutrino masses, w0 and wa) in `examples/syren_new_example.ipynb`.
 And `examples/syren_baryon_example.ipynb` shows how to incorporate baryonic effects.
+If one needs wider priors for a ΛCDM universe, or wants to use the comoving
+distance and linear growth factor emulators, see `examples/wider_syren_example.ipynb`.
 
 The example `examples/fortran_example.py` shows how to run the
 fortran code with the python wrapper, and compares the difference
@@ -134,20 +142,41 @@ archivePrefix = {arXiv},
 If you use the baryonic emulators, please cite
 ```
 @ARTICLE{syren_baryon,
-     author = {{Kammerer}, L. and {Bartlett}, D.~J. and {Kronberger}, G. and {Desmond}, H.
-               and {Ferreira}, P.~G. },  
-      title = "{syren-baryon: Analytic emulators for the impact of baryons on the matter power spectrum}",
+       author = {{Kammerer}, Lukas and {Bartlett}, Deaglan J. and {Kronberger}, Gabriel 
+                and {Desmond}, Harry and {Ferreira}, Pedro G.},
+        title = "{syren-baryon: Analytic emulators for the impact of baryons on the matter power spectrum}",
+      journal = {\aap},
+     keywords = {hydrodynamics, methods: numerical, cosmological parameters, cosmology: theory, dark energy, large-scale structure of Universe, Cosmology and Nongalactic Astrophysics, Astrophysics of Galaxies, Instrumentation and Methods for Astrophysics, Machine Learning, Neural and Evolutionary Computing},
+         year = 2025,
+        month = sep,
+       volume = {701},
+          eid = {A284},
+        pages = {A284},
+          doi = {10.1051/0004-6361/202555887},
+archivePrefix = {arXiv},
+       eprint = {2506.08783},
+ primaryClass = {astro-ph.CO},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/2025A&A...701A.284K},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+```
+
+If you use the baryonic emulators, please cite
+```
+@ARTICLE{wider_syren,
+     author = {{Bartlett}, D.~J. and {Pandey}, S.},  
+      title = "{Symbolic Emulators for Cosmology: Accelerating Cosmological Analyses Without Sacrificing Precision}",
     journal = {arXiv e-prints},
    keywords = {Astrophysics - Cosmology and Nongalactic Astrophysics},
        year = 2025,
       month = jun,
-        eid = {arXiv:2506.08783},
-      pages = {arXiv:2506.08783},
-        doi = {10.48550/arXiv.2506.08783},
+        eid = {arXiv:2510.XXXXX},
+      pages = {arXiv:2510.XXXXX},
+        doi = {10.48550/arXiv.2510.XXXXX},
 archivePrefix = {arXiv},
-     eprint = {2506.08783},
+     eprint = {2510.XXXXX},
 primaryClass = {astro-ph.CO},
-        url = {https://arxiv.org/abs/2506.08783},
+        url = {https://arxiv.org/abs/2510.XXXXX},
 }
 ```
 
