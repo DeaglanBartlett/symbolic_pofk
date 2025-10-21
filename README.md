@@ -161,7 +161,8 @@ archivePrefix = {arXiv},
 }
 ```
 
-If you use the baryonic emulators, please cite
+If you use the emulators for ΛCDM with wider priors, or the emulators
+for the comoving distance and/or growth rate, please cite
 ```
 @ARTICLE{wider_syren,
      author = {{Bartlett}, D.~J. and {Pandey}, S.},  
