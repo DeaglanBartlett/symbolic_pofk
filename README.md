@@ -4,6 +4,7 @@
 [![arXiv](https://img.shields.io/badge/arXiv-2402.17492-b31b1b.svg)](https://arxiv.org/abs/2402.17492)
 [![arXiv](https://img.shields.io/badge/arXiv-2410.14623-b31b1b.svg)](https://arxiv.org/abs/2410.14623)
 [![arXiv](https://img.shields.io/badge/arXiv-2506.08783-b31b1b.svg)](https://arxiv.org/abs/2506.08783)
+[![arXiv](https://img.shields.io/badge/arXiv-2510.XXXXX-b31b1b.svg)](https://arxiv.org/abs/2510.XXXXX)
 
 [![Coverage](https://img.shields.io/codecov/c/github/DeaglanBartlett/symbolic_pofk)](https://app.codecov.io/gh/DeaglanBartlett/symbolic_pofk)
 [![Build Status](https://github.com/DeaglanBartlett/symbolic_pofk/actions/workflows/build-linux.yml/badge.svg)](https://github.com/DeaglanBartlett/symbolic_pofk/actions/workflows/build-linux.yml)
@@ -20,6 +21,7 @@ Please see
 * [Bartlett et al. 2024](https://arxiv.org/abs/2402.17492) (Nonlinear power spectrum)
 * [Sui et al. 2024](https://arxiv.org/abs/2410.14623) ($w_0-w_a$ and non-zero neutrino masses)
 * [Kammerer et al. 2025](https://arxiv.org/abs/2506.08783) (Baryonic effects)
+* [Bartlett & Pandey 2025](https://arxiv.org/abs/2510.XXXXX) (Emulators for 3x2pt analysis with wider priors)
   
 for further details.
 
