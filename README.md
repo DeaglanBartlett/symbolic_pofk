@@ -44,7 +44,7 @@ To install the emulators and the dependencies, run the following
 ```
 git clone git@github.com:DeaglanBartlett/symbolic_pofk.git
 cd symbolic_pofk
-pip install ,
+pip install .
 ```
 
 If you wish to use the pytorch code, the third line should be replaced with
